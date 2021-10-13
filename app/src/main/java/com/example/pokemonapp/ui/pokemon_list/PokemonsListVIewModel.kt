@@ -1,4 +1,4 @@
-package com.example.pokemonapp.ui.pokemons_list
+package com.example.pokemonapp.ui.pokemon_list
 
 import android.util.Log
 import androidx.lifecycle.LiveData
