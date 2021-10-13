@@ -1,8 +1,8 @@
-package com.example.pokemonapp.network.model.pokemons_list
+package com.example.pokemonapp.network.model.pokemon_list
 
 import com.google.gson.annotations.SerializedName
 
-data class PokemonsListDto(
+data class PokemonListDto(
     @SerializedName("count")
     val count: Int?,
     @SerializedName("next")

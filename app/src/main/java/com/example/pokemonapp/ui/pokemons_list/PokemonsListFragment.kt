@@ -20,11 +20,18 @@ class PokemonsListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        viewModel.pokemons.observe(viewLifecycleOwner) {
+        viewModel.pokemonList.observe(viewLifecycleOwner) {
+            Log.d("MyLog", it.toString())
+            it.forEach {
+                viewModel.loadPokemonDetails(it.id ?: 0)
+            }
+        }
+
+        viewModel.pokemonDetails.observe(viewLifecycleOwner) {
             Log.d("MyLog", it.toString())
         }
 
-        viewModel.loadPokemonsList()
+        viewModel.loadPokemonList()
 
         return inflater.inflate(R.layout.fragment_pokemons_list, container, false)
     }

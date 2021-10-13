@@ -5,9 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pokemonapp.domain.Pokemon
+import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.network.PokeApiContract
-import com.example.pokemonapp.network.PokeApiService
-import com.example.pokemonapp.network.model.pokemons_list.PokemonsListDto
+import com.example.pokemonapp.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -16,23 +17,38 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PokemonsListVIewModel @Inject constructor(
-    private val pokeApiService: PokeApiService
+    private val pokemonRepository: PokemonRepository
 ): ViewModel() {
 
-    private var mutablePokemons = MutableLiveData<PokemonsListDto>()
-    val pokemons: LiveData<PokemonsListDto> = mutablePokemons
+    private var mutablePokemonList = MutableLiveData<List<PokemonPreview>>()
+    val pokemonList: LiveData<List<PokemonPreview>> = mutablePokemonList
 
-    fun loadPokemonsList() {
+    private var mutablePokemonDetails = MutableLiveData<Pokemon>()
+    val pokemonDetails: LiveData<Pokemon> = mutablePokemonDetails
+
+    fun loadPokemonList() {
         val handler = CoroutineExceptionHandler { _, exception ->
             Log.e("MyLog","CoroutineExceptionHandler got $exception")
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
-            mutablePokemons.postValue(
-                pokeApiService.getPokemonsList(
+        viewModelScope.launch(Dispatchers.IO + handler) {
+            mutablePokemonList.postValue(
+                pokemonRepository.loadPokemonList(
                     PokeApiContract.ITEMS_PER_PAGE,
                     0
                 )
+            )
+        }
+    }
+
+    fun loadPokemonDetails(pokemonId: Int) {
+        val handler = CoroutineExceptionHandler { _, exception ->
+            Log.e("MyLog","CoroutineExceptionHandler got $exception")
+        }
+
+        viewModelScope.launch(Dispatchers.IO + handler) {
+            mutablePokemonDetails.postValue(
+                pokemonRepository.loadPokemonDetailsById(pokemonId)
             )
         }
     }
