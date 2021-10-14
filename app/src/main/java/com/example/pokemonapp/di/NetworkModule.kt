@@ -1,6 +1,7 @@
 package com.example.pokemonapp.di
 
 import com.example.pokemonapp.network.PokeApiContract
+import com.example.pokemonapp.network.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
 import dagger.Module
 import dagger.Provides
@@ -42,5 +43,15 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(PokeApiService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providePokeApiPageSource(
+        pokeApiService: PokeApiService
+    ): PokeApiPageSource {
+        return PokeApiPageSource(
+            pokeApiService, 1
+        )
     }
 }

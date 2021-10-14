@@ -11,15 +11,28 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pokemonapp.R
 import com.example.pokemonapp.databinding.FragmentPokemonListBinding
+import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonPagingDataAdapter
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonRecyclerViewAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class PokemonListFragment : Fragment() {
 
     private val viewModel: PokemonsListVIewModel by viewModels()
     private lateinit var binding: FragmentPokemonListBinding
-    private lateinit var pokemonRecyclerViewAdapter: PokemonRecyclerViewAdapter
+//    private lateinit var pokemonRecyclerViewAdapter: PokemonRecyclerViewAdapter
+
+    private val pagingAdapter by lazy ( LazyThreadSafetyMode.NONE ) {
+        PokemonPagingDataAdapter(requireContext())
+    }
+
+    val job = Job()
+    val uiScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,24 +50,26 @@ class PokemonListFragment : Fragment() {
 
         val view: View = binding.root
 
-        pokemonRecyclerViewAdapter = PokemonRecyclerViewAdapter()
-
         val pokemonRecyclerViewLayoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.VERTICAL,
             false
         )
+
         binding.pokemonListRecyclerView.layoutManager = pokemonRecyclerViewLayoutManager
-        binding.pokemonListRecyclerView.adapter = pokemonRecyclerViewAdapter
+        binding.pokemonListRecyclerView.adapter = pagingAdapter
 
-        viewModel.pokemonList.observe(viewLifecycleOwner) {
-            Log.d("MyLog", it.toString())
-            pokemonRecyclerViewAdapter.itemsList = it
+        uiScope.launch {
+            viewModel.pokemons.collectLatest {
+                pagingAdapter.submitData(it)
+            }
         }
-
-        viewModel.loadPokemonList()
 
         return view;
     }
 
+    override fun onDestroy() {
+        job.cancel()
+        super.onDestroy()
+    }
 }
