@@ -9,5 +9,26 @@
         android:id="@+id/pokemonsList"
         android:name="com.example.pokemonapp.ui.pokemon_list.PokemonListFragment"
         android:label="fragment_pokemons_list"
-        tools:layout="@layout/fragment_pokemon_list" />
+        tools:layout="@layout/fragment_pokemon_list" >
+        <action
+            android:id="@+id/action_to_details"
+            app:destination="@id/pokemonDetailsFragment" >
+            <argument
+                android:name="pokemonId"
+                app:argType="integer" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/pokemonDetailsFragment"
+        android:name="com.example.pokemonapp.ui.pokemon_details.PokemonDetailsFragment"
+        android:label="PokemonDetailsFragment" >
+        <action
+            android:id="@+id/action_to_list"
+            app:destination="@id/pokemonsList"
+            app:argType="integer" />
+        <argument
+            android:name="pokemonId"
+            app:argType="integer" />
+    </fragment>
 </navigation>
