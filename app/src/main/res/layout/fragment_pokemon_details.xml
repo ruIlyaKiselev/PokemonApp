@@ -7,7 +7,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.pokemon_details.PokemonDetailsFragment" >
+        tools:context=".ui.pokemon_details.PokemonDetailsFragment">
 
 
         <ImageView
@@ -87,6 +87,113 @@
             app:layout_constraintTop_toBottomOf="@+id/pokemon_details_type">
 
         </com.google.android.material.chip.ChipGroup>
+
+        <View
+            android:id="@+id/divider2"
+            android:layout_width="409dp"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_chipgroup" />
+
+        <ProgressBar
+            android:id="@+id/pokemon_details_attack_progress_bar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:indeterminateOnly="false"
+            android:progressDrawable="@drawable/circle"
+            app:layout_constraintEnd_toStartOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_chipgroup"
+            tools:progress="60" />
+
+        <ProgressBar
+            android:id="@+id/pokemon_details_defence_progress_bar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:indeterminateOnly="false"
+            android:progressDrawable="@drawable/circle"
+            app:layout_constraintEnd_toStartOf="@+id/pokemon_details_hp_progress_bar"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/pokemon_details_attack_progress_bar"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_chipgroup"
+            tools:progress="30"/>
+
+        <ProgressBar
+            android:id="@+id/pokemon_details_hp_progress_bar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:indeterminateOnly="false"
+            android:progressDrawable="@drawable/circle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_chipgroup"
+            tools:progress="75"/>
+
+        <TextView
+            android:id="@+id/pokemon_details_attack_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            app:layout_constraintBottom_toBottomOf="@+id/pokemon_details_attack_progress_bar"
+            app:layout_constraintEnd_toEndOf="@+id/pokemon_details_attack_progress_bar"
+            app:layout_constraintStart_toStartOf="@+id/pokemon_details_attack_progress_bar"
+            app:layout_constraintTop_toTopOf="@+id/pokemon_details_attack_progress_bar" />
+
+        <TextView
+            android:id="@+id/pokemon_details_defence_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            app:layout_constraintBottom_toBottomOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintEnd_toEndOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintStart_toStartOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintTop_toTopOf="@+id/pokemon_details_defence_progress_bar" />
+
+        <TextView
+            android:id="@+id/pokemon_details_hp_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            app:layout_constraintBottom_toBottomOf="@+id/pokemon_details_hp_progress_bar"
+            app:layout_constraintEnd_toEndOf="@+id/pokemon_details_hp_progress_bar"
+            app:layout_constraintStart_toStartOf="@+id/pokemon_details_hp_progress_bar"
+            app:layout_constraintTop_toTopOf="@+id/pokemon_details_hp_progress_bar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Attack"
+            app:layout_constraintEnd_toEndOf="@+id/pokemon_details_attack_progress_bar"
+            app:layout_constraintStart_toStartOf="@+id/pokemon_details_attack_progress_bar"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_attack_progress_bar" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Defence"
+            app:layout_constraintEnd_toEndOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintStart_toStartOf="@+id/pokemon_details_defence_progress_bar"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_defence_progress_bar" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="HP"
+            app:layout_constraintEnd_toEndOf="@+id/pokemon_details_hp_progress_bar"
+            app:layout_constraintStart_toStartOf="@+id/pokemon_details_hp_progress_bar"
+            app:layout_constraintTop_toBottomOf="@+id/pokemon_details_hp_progress_bar" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

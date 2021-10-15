@@ -14,6 +14,10 @@ import com.example.pokemonapp.databinding.FragmentPokemonDetailsBinding
 import com.example.pokemonapp.domain.Pokemon
 import dagger.hilt.android.AndroidEntryPoint
 
+import com.google.android.material.chip.Chip
+
+import com.google.android.material.chip.ChipGroup
+
 @AndroidEntryPoint
 class PokemonDetailsFragment : Fragment() {
 
@@ -53,6 +57,28 @@ class PokemonDetailsFragment : Fragment() {
             pokemonDetailsName.text = pokemon.pokemonName
             pokemonDetailsHeight.text = "Height: ${pokemon.height}"
             pokemonDetailsWeight.text = "Weight: ${pokemon.weight}"
+
+            pokemon.type.forEach { nullableType ->
+                nullableType?.let { type -> addChip(type, pokemonDetailsChipgroup) }
+            }
+
+            pokemonDetailsAttackProgressBar.max = viewModel.getMaxPokemonAttack()
+            pokemonDetailsAttackProgressBar.progress = pokemon.stats?.attack ?: 0
+            pokemonDetailsAttackTextview.text = pokemon.stats?.attack.toString()
+
+            pokemonDetailsDefenceProgressBar.max = viewModel.getMaxPokemonDefence()
+            pokemonDetailsDefenceProgressBar.progress = pokemon.stats?.defence ?: 0
+            pokemonDetailsDefenceTextview.text = pokemon.stats?.defence.toString()
+
+            pokemonDetailsHpProgressBar.max = viewModel.getMaxPokemonHp()
+            pokemonDetailsHpProgressBar.progress = pokemon.stats?.hp ?: 0
+            pokemonDetailsHpTextview.text = pokemon.stats?.hp.toString()
         }
+    }
+
+    private fun addChip(pItem: String, pChipGroup: ChipGroup) {
+        val lChip = Chip(requireContext())
+        lChip.text = pItem
+        pChipGroup.addView(lChip, pChipGroup.childCount - 1)
     }
 }

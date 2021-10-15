@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.network.PokeApiContract
@@ -39,6 +40,7 @@ class PokemonListViewModel @Inject constructor(
     ) {
         pokeApiPageSource
     }.flow
+        .cachedIn(viewModelScope)
         .stateIn(viewModelScope, SharingStarted.Lazily, PagingData.empty())
 
 

@@ -7,4 +7,6 @@ interface PokemonRepository {
     suspend fun loadPokemonList(limit: Int, offset: Int): List<PokemonPreview>
     suspend fun loadPokemonDetailsById(pokemonId: Int): Pokemon
     suspend fun loadPokemonDetailsByName(pokemonName: String): Pokemon
+    fun getStoredPokemons(): MutableList<Pokemon>
+    fun clearStoredPokemons()
 }
