@@ -11,13 +11,13 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/pokemonListRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:layout_marginStart="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/main_screen_attack_check_box">
 
         </androidx.recyclerview.widget.RecyclerView>
 
@@ -31,6 +31,57 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/pokemonListRecyclerView" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="32dp"
+            android:clickable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/ic_refresh" />
+
+        <CheckBox
+            android:id="@+id/main_screen_attack_check_box"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Attack"
+            app:layout_constraintEnd_toStartOf="@+id/main_screen_defence_check_box"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/main_screen_defence_check_box"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Defence"
+            app:layout_constraintEnd_toStartOf="@+id/main_screen_hp_check_box"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/main_screen_attack_check_box"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/main_screen_hp_check_box"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="HP"
+            app:layout_constraintEnd_toStartOf="@+id/main_screen_help_button"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/main_screen_defence_check_box"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/main_screen_help_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/main_screen_defence_check_box"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/main_screen_hp_check_box"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_help" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
