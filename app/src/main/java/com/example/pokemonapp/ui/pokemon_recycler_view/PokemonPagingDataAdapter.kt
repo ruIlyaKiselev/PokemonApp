@@ -3,12 +3,14 @@ package com.example.pokemonapp.ui.pokemon_recycler_view
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.pokemonapp.databinding.PokemonRecyclerViewItemBinding
 import com.example.pokemonapp.domain.PokemonPreview
+import com.example.pokemonapp.ui.pokemon_list.PokemonListFragmentDirections
 
 class PokemonPagingDataAdapter(context: Context):
     PagingDataAdapter<PokemonPreview, PokemonViewHolder>(PokemonDiffItemCallbacks) {
@@ -32,6 +34,11 @@ class PokemonViewHolder(
         with(binding) {
             rcItemTextView.text = pokemonPreview.pokemonName
             rcItemImage.load(pokemonPreview.imageUrl)
+
+            root.setOnClickListener {
+                val action = PokemonListFragmentDirections.actionToDetails(pokemonPreview.id ?: 0)
+                itemView.findNavController().navigate(action)
+            }
         }
     }
 }

@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
@@ -25,7 +27,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class PokemonListFragment : Fragment() {
 
-    private val viewModel: PokemonsListVIewModel by viewModels()
+    private val viewModel: PokemonListViewModel by viewModels()
     private lateinit var binding: FragmentPokemonListBinding
 
     private val pagingAdapter by lazy ( LazyThreadSafetyMode.NONE ) {
@@ -77,6 +79,8 @@ class PokemonListFragment : Fragment() {
                 pagingAdapter.submitData(it)
             }
         }
+
+
 
         return view;
     }

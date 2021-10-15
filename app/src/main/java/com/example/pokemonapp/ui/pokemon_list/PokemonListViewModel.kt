@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonsListVIewModel @Inject constructor(
+class PokemonListViewModel @Inject constructor(
     private val pokemonRepository: PokemonRepository,
     private val pokeApiPageSource: PokeApiPageSource
 ): ViewModel() {
