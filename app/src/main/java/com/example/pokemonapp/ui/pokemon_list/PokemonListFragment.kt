@@ -74,15 +74,22 @@ class PokemonListFragment : Fragment() {
             }
         }
 
+        loadDataFromPageSource()
+
+        binding.floatingActionButton.setOnClickListener {
+            viewModel.resetPokemonPagerRandomly()
+            loadDataFromPageSource()
+        }
+
+        return view;
+    }
+
+    private fun loadDataFromPageSource() {
         uiScope.launch {
             viewModel.pokemons.collectLatest {
                 pagingAdapter.submitData(it)
             }
         }
-
-
-
-        return view;
     }
 
     override fun onDestroy() {

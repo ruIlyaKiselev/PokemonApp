@@ -6,12 +6,11 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:elevation="15dp"
+        android:layout_margin="8dp"
         android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:focusable="true">
+        android:elevation="15dp"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,7 +18,7 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/rcItemLoadStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
@@ -37,12 +36,22 @@
                 app:srcCompat="@drawable/empty_item" />
 
             <TextView
-                android:id="@+id/rcItemTextView"
+                android:id="@+id/rcItemName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:layout_weight="1"
                 android:text="Name"
                 android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/rcItemId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="right"
+                android:text="id:" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

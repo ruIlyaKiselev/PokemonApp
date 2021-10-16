@@ -1,5 +1,7 @@
 package com.example.pokemonapp.network
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
@@ -9,6 +11,20 @@ class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
     private val initialPage: Int
 ): PagingSource<Int, PokemonPreview>() {
+
+    var cachedPages: LiveData<MutableSet<PokemonPreview>> = liveData {
+        sortedSetOf(PokemonsSetComparator())
+    }
+
+    class PokemonsSetComparator: Comparator<PokemonPreview> {
+        override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
+            if(p0 == null || p1 == null){
+                return 0;
+            }
+
+            return p0.id!!.compareTo(p1.id!!)
+        }
+    }
 
     override fun getRefreshKey(state: PagingState<Int, PokemonPreview>): Int? {
         val anchorPosition = state.anchorPosition ?: return null
@@ -26,12 +42,13 @@ class PokeApiPageSource(
             )
         }
 
-        val page: Int = params.key ?: 1
+        val page: Int = params.key ?: initialPage
         val pageSize: Int = params.loadSize.coerceAtLeast(PokeApiContract.ITEMS_PER_PAGE)
 
         val response = pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
 
         val resultList = response.toDomain()
+        cachedPages.value?.addAll(resultList)
 
         val nextPage = if (response.results!!.size < pageSize) null else page + 1
         val prevPage = if (page <= 1) null else page - 1

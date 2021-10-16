@@ -51,7 +51,7 @@ object NetworkModule {
         pokeApiService: PokeApiService
     ): PokeApiPageSource {
         return PokeApiPageSource(
-            pokeApiService, 1
+            pokeApiService, 2
         )
     }
 }

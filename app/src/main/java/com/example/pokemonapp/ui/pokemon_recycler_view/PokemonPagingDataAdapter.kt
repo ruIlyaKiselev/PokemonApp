@@ -1,6 +1,7 @@
 package com.example.pokemonapp.ui.pokemon_recycler_view
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.findNavController
@@ -8,6 +9,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.pokemonapp.R
 import com.example.pokemonapp.databinding.PokemonRecyclerViewItemBinding
 import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.ui.pokemon_list.PokemonListFragmentDirections
@@ -32,8 +34,17 @@ class PokemonViewHolder(
 
     fun bind(pokemonPreview: PokemonPreview) {
         with(binding) {
-            rcItemTextView.text = pokemonPreview.pokemonName
+            rcItemName.text = pokemonPreview.pokemonName
             rcItemImage.load(pokemonPreview.imageUrl)
+            rcItemId.text = "id: ${pokemonPreview.id}"
+
+            if (pokemonPreview.loadedFullInfo) {
+                rcItemLoadStatus.setImageResource(R.drawable.ic_done)
+                rcItemLoadStatus.setColorFilter(Color.GREEN)
+            } else {
+                rcItemLoadStatus.setImageResource(R.drawable.ic_fail)
+                rcItemLoadStatus.setColorFilter(Color.RED)
+            }
 
             root.setOnClickListener {
                 val action = PokemonListFragmentDirections.actionToDetails(pokemonPreview.id ?: 0)

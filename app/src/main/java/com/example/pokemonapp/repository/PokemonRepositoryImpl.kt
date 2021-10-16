@@ -1,9 +1,12 @@
 package com.example.pokemonapp.repository
 
-import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
 import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
+import com.example.pokemonapp.network.PokeApiContract
+import com.example.pokemonapp.network.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
 
 class PokemonRepositoryImpl(
@@ -34,6 +37,17 @@ class PokemonRepositoryImpl(
             val loadedPokemon = pokeApiService.getPokemonDetailsByName(pokemonName).toDomain()
             storedPokemons.add(loadedPokemon)
             loadedPokemon
+        }
+    }
+
+    override fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview> {
+        return Pager(
+            PagingConfig(
+                pageSize = PokeApiContract.ITEMS_PER_PAGE,
+                initialLoadSize = PokeApiContract.ITEMS_PER_PAGE,
+            )
+        ) {
+            PokeApiPageSource(pokeApiService, initialPage)
         }
     }
 

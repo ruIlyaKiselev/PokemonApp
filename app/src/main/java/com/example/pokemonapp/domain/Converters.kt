@@ -30,8 +30,7 @@ class Converters {
             PokemonPreview(
                 id = parsedId,
                 pokemonName = it.name,
-                imageUrl = "${PokeApiContract.IMAGES_URL}$parsedId.png",
-                loadedFullInfo = false
+                imageUrl = "${PokeApiContract.IMAGES_URL}$parsedId.png"
             )
         } ?: emptyList()
     }
