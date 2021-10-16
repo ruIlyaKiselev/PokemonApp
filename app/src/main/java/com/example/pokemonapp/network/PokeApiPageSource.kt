@@ -1,22 +1,25 @@
 package com.example.pokemonapp.network
 
+import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.liveData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
 import com.example.pokemonapp.domain.PokemonPreview
+import com.example.pokemonapp.repository.PokemonRepository
 
 class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
     private val initialPage: Int
 ): PagingSource<Int, PokemonPreview>() {
 
-    var cachedPages: LiveData<MutableSet<PokemonPreview>> = liveData {
-        sortedSetOf(PokemonsSetComparator())
-    }
+    var cachedPreviews: MutableLiveData<MutableSet<PokemonPreview>> = MutableLiveData(
+        sortedSetOf(PokemonPreviewSetComparator())
+    )
 
-    class PokemonsSetComparator: Comparator<PokemonPreview> {
+    class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
         override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
             if(p0 == null || p1 == null){
                 return 0;
@@ -48,7 +51,9 @@ class PokeApiPageSource(
         val response = pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
 
         val resultList = response.toDomain()
-        cachedPages.value?.addAll(resultList)
+        cachedPreviews.value?.addAll(resultList)
+        cachedPreviews.value = cachedPreviews.value
+        Log.d("MyLog", cachedPreviews.value?.map { it.id }.toString())
 
         val nextPage = if (response.results!!.size < pageSize) null else page + 1
         val prevPage = if (page <= 1) null else page - 1

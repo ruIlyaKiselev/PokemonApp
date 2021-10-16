@@ -5,5 +5,5 @@ data class PokemonPreview (
     val pokemonName: String?,
     val imageUrl: String?
 ) {
-    var loadedFullInfo: Boolean = id!! % 2 == 0
+    var loadedFullInfo: Boolean = false
 }

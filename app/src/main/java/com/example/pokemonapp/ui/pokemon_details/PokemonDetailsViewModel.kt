@@ -33,7 +33,7 @@ class PokemonDetailsViewModel@Inject constructor(
 
     fun getMaxPokemonAttack(): Int {
 
-        val storedPokemons: MutableList<Pokemon> = pokemonRepository.getStoredPokemons()
+        val storedPokemons: MutableList<Pokemon> = pokemonRepository.getStoredPokemons().value!!.toMutableList()
         storedPokemons.sortByDescending {
             it.stats?.attack
         }
@@ -42,7 +42,7 @@ class PokemonDetailsViewModel@Inject constructor(
 
     fun getMaxPokemonDefence(): Int {
 
-        val storedPokemons: MutableList<Pokemon> = pokemonRepository.getStoredPokemons()
+        val storedPokemons: MutableList<Pokemon> = pokemonRepository.getStoredPokemons().value!!.toMutableList()
         storedPokemons.sortByDescending {
             it.stats?.defence
         }
@@ -51,7 +51,7 @@ class PokemonDetailsViewModel@Inject constructor(
 
     fun getMaxPokemonHp(): Int {
 
-        val storedPokemons: MutableList<Pokemon> = pokemonRepository.getStoredPokemons()
+        val storedPokemons: MutableList<Pokemon> = pokemonRepository.getStoredPokemons().value!!.toMutableList()
         storedPokemons.sortByDescending {
             it.stats?.hp
         }

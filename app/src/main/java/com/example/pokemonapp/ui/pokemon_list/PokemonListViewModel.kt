@@ -27,7 +27,7 @@ class PokemonListViewModel @Inject constructor(
     private var pokemonPager = pokemonRepository.getPokemonPager(1)
     var pokemons: StateFlow<PagingData<PokemonPreview>> = getPokemonsStateFlow()
 
-    private var currentPage = 0
+    var storedPokemons = pokemonRepository.getStoredPokemons()
 
     private fun getPokemonsStateFlow(): StateFlow<PagingData<PokemonPreview>>  {
         val stateFlow = pokemonPager

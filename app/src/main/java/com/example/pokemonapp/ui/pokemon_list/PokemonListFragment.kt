@@ -81,6 +81,14 @@ class PokemonListFragment : Fragment() {
             loadDataFromPageSource()
         }
 
+        viewModel.storedPokemons.observe(viewLifecycleOwner) {
+            val loadedPokemonsIdSet = it.map { pokemon ->
+                pokemon.id
+            }
+
+            pagingAdapter.notifyPokemonLoaded(loadedPokemonsIdSet)
+        }
+
         return view;
     }
 

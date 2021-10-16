@@ -26,6 +26,15 @@ class PokemonPagingDataAdapter(context: Context):
         val binding = PokemonRecyclerViewItemBinding.inflate(inflater, parent, false)
         return PokemonViewHolder(binding)
     }
+
+    fun notifyPokemonLoaded(loadedPokemonsIdList: List<Int?>) {
+        snapshot().items.forEachIndexed {i, pokemonPreview ->
+            if (loadedPokemonsIdList.contains(pokemonPreview.id)) {
+                pokemonPreview.loadedFullInfo = true
+                notifyItemChanged(i)
+            }
+        }
+    }
 }
 
 class PokemonViewHolder(
@@ -60,6 +69,6 @@ private object PokemonDiffItemCallbacks: DiffUtil.ItemCallback<PokemonPreview>()
     }
 
     override fun areContentsTheSame(oldItem: PokemonPreview, newItem: PokemonPreview): Boolean {
-        return oldItem.pokemonName == oldItem.pokemonName
+        return oldItem.pokemonName == oldItem.pokemonName && oldItem.loadedFullInfo == newItem.loadedFullInfo
     }
 }
