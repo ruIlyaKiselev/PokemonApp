@@ -1,15 +1,15 @@
 package com.example.pokemonapp.ui.pokemon_list
 
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.example.pokemonapp.domain.Pokemon
-import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,18 +17,17 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.coroutineContext
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
     private val pokemonRepository: PokemonRepository
 ): ViewModel() {
 
-    private var mutablePokemonList = MutableLiveData<MutableList<PokemonPreview>>()
-    val pokemonList: LiveData<MutableList<PokemonPreview>> = mutablePokemonList
+    private var mutablePokemonList = MutableLiveData<MutableList<Pokemon>>()
+    val pokemonList: LiveData<MutableList<Pokemon>> = mutablePokemonList
 
     private var pokemonPager = pokemonRepository.getPokemonPager(1)
-    var pokemons: StateFlow<PagingData<PokemonPreview>> = getPokemonsStateFlow()
+    var pokemons: StateFlow<PagingData<Pokemon>> = getPokemonsStateFlow()
 
     var storedPokemons: MutableLiveData<MutableSet<Pokemon>> = pokemonRepository.getStoredPokemons()
 
@@ -41,7 +40,7 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
-    private fun getPokemonsStateFlow(): StateFlow<PagingData<PokemonPreview>>  {
+    private fun getPokemonsStateFlow(): StateFlow<PagingData<Pokemon>>  {
         val stateFlow = pokemonPager
             .flow
             .cachedIn(viewModelScope)
@@ -65,13 +64,13 @@ class PokemonListViewModel @Inject constructor(
         byAttack: Boolean,
         byDefence: Boolean,
         byHp: Boolean
-    ): List<Int> {
+    ): List<Pokemon> {
 
         val sortedList = storedPokemons.value?.sortedWith(
             PokemonComparator(byAttack, byDefence, byHp)
         )
 
-        return sortedList?.map { it.id!! } ?: listOf()
+        return sortedList ?: listOf()
     }
 
     private class PokemonComparator(
@@ -103,7 +102,7 @@ class PokemonListViewModel @Inject constructor(
                 p1Sum += p1.stats!!.hp!!
             }
 
-            return p0Sum.compareTo(p1Sum)
+            return p1Sum.compareTo(p0Sum)
         }
     }
 }

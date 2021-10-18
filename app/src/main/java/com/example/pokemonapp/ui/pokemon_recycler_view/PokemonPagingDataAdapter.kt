@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.pokemonapp.R
 import com.example.pokemonapp.databinding.PokemonRecyclerViewItemBinding
-import com.example.pokemonapp.domain.PokemonPreview
+import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.ui.pokemon_list.PokemonListFragmentDirections
 
 class PokemonPagingDataAdapter(context: Context):
-    PagingDataAdapter<PokemonPreview, PokemonViewHolder>(PokemonDiffItemCallbacks) {
+    PagingDataAdapter<Pokemon, PokemonViewHolder>(PokemonDiffItemCallbacks) {
 
     override fun onBindViewHolder(holder: PokemonViewHolder, position: Int) {
         getItem(position)?.let { holder.bind(it) }
@@ -27,27 +27,19 @@ class PokemonPagingDataAdapter(context: Context):
         return PokemonViewHolder(binding)
     }
 
-    fun notifyPokemonLoaded(loadedPokemonsIdList: List<Int?>) {
-        snapshot().items.forEachIndexed {i, pokemonPreview ->
-            if (loadedPokemonsIdList.contains(pokemonPreview.id)) {
-                pokemonPreview.loadedFullInfo = true
-                notifyItemChanged(i)
-            }
-        }
-    }
 }
 
 class PokemonViewHolder(
     private val binding: PokemonRecyclerViewItemBinding
 ): RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(pokemonPreview: PokemonPreview) {
+    fun bind(pokemonPreview: Pokemon) {
         with(binding) {
             rcItemName.text = pokemonPreview.pokemonName
             rcItemImage.load(pokemonPreview.imageUrl)
             rcItemId.text = "id: ${pokemonPreview.id}"
 
-            if (pokemonPreview.loadedFullInfo) {
+            if (pokemonPreview.height != null) {
                 rcItemLoadStatus.setImageResource(R.drawable.ic_done)
                 rcItemLoadStatus.setColorFilter(Color.GREEN)
             } else {
@@ -63,12 +55,12 @@ class PokemonViewHolder(
     }
 }
 
-private object PokemonDiffItemCallbacks: DiffUtil.ItemCallback<PokemonPreview>() {
-    override fun areItemsTheSame(oldItem: PokemonPreview, newItem: PokemonPreview): Boolean {
+private object PokemonDiffItemCallbacks: DiffUtil.ItemCallback<Pokemon>() {
+    override fun areItemsTheSame(oldItem: Pokemon, newItem: Pokemon): Boolean {
         return oldItem == newItem
     }
 
-    override fun areContentsTheSame(oldItem: PokemonPreview, newItem: PokemonPreview): Boolean {
-        return oldItem.pokemonName == oldItem.pokemonName && oldItem.loadedFullInfo == newItem.loadedFullInfo
+    override fun areContentsTheSame(oldItem: Pokemon, newItem: Pokemon): Boolean {
+        return oldItem.pokemonName == oldItem.pokemonName
     }
 }

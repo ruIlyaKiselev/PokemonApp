@@ -7,14 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pokemonapp.R
 import com.example.pokemonapp.databinding.FragmentPokemonListBinding
+import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonLoaderStateAdapter
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonPagingDataAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -88,15 +87,16 @@ class PokemonListFragment : Fragment() {
     }
 
     private fun configurePokemonDetailsLoadingToRecyclerView() {
-        viewModel.storedPokemons.observe(viewLifecycleOwner) {
-            val loadedPokemonsIdSet = it.map { pokemon ->
-                pokemon.id
-            }
-
-            pagingAdapter.snapshot().forEach { pokemonPreview ->
-                if(loadedPokemonsIdSet.contains(pokemonPreview?.id)) {
-                    pokemonPreview?.loadedFullInfo = true
+        viewModel.storedPokemons.observe(viewLifecycleOwner) { updatedPokemons ->
+            pagingAdapter.snapshot().forEach { preloadedPokemon ->
+                val updatedPokemon = updatedPokemons.find {
+                    it.id == preloadedPokemon?.id
                 }
+
+                preloadedPokemon?.height = updatedPokemon?.height
+                preloadedPokemon?.weight = updatedPokemon?.weight
+                preloadedPokemon?.stats = updatedPokemon?.stats
+                preloadedPokemon?.type = updatedPokemon?.type ?: listOf()
             }
 
             pagingAdapter.notifyDataSetChanged()
@@ -120,12 +120,26 @@ class PokemonListFragment : Fragment() {
     }
 
     private fun sortPokemons() {
+        var loadedPokemonList: List<Pokemon>
+
         binding.apply {
-            viewModel.sortPokemons(
+            loadedPokemonList = viewModel.sortPokemons(
                 byAttack = mainScreenAttackCheckBox.isChecked,
                 byDefence = mainScreenDefenceCheckBox.isChecked,
                 byHp = mainScreenHpCheckBox.isChecked,
             )
+        }
+
+        for (i in loadedPokemonList.indices) {
+            pagingAdapter.snapshot()[i]?.apply {
+                id = loadedPokemonList[i].id
+                pokemonName = loadedPokemonList[i].pokemonName
+                imageUrl = loadedPokemonList[i].imageUrl
+                height = loadedPokemonList[i].height
+                weight = loadedPokemonList[i].weight
+                stats = loadedPokemonList[i].stats
+                type = loadedPokemonList[i].type
+            }
         }
     }
 

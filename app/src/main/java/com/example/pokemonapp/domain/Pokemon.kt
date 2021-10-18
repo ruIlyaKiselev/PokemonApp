@@ -1,11 +1,12 @@
 package com.example.pokemonapp.domain
 
 data class Pokemon (
-    val id: Int?,
-    val pokemonName: String?,
-    val imageUrl: String?,
-    val height: Int?,
-    val weight: Int?,
-    val type: List<String?>,
-    val stats: Stats?
-)
+    var id: Int?,
+    var pokemonName: String?,
+    var imageUrl: String?
+) {
+    var height: Int? = null
+    var weight: Int? = null
+    var type: List<String?> = listOf()
+    var stats: Stats? = null
+}

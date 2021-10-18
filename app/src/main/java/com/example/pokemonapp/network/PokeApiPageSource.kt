@@ -1,26 +1,24 @@
 package com.example.pokemonapp.network
 
-import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.liveData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
+import com.example.pokemonapp.domain.Converters.Companion.toPreloaded
+import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
-import com.example.pokemonapp.repository.PokemonRepository
 
 class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
     private val initialPage: Int
-): PagingSource<Int, PokemonPreview>() {
+): PagingSource<Int, Pokemon>() {
 
-    var cachedPreviews: MutableLiveData<MutableSet<PokemonPreview>> = MutableLiveData(
+    var cachedPreviews: MutableLiveData<MutableSet<Pokemon>> = MutableLiveData(
         sortedSetOf(PokemonPreviewSetComparator())
     )
 
-    class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
-        override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
+    class PokemonPreviewSetComparator: Comparator<Pokemon> {
+        override fun compare(p0: Pokemon?, p1: Pokemon?): Int {
             if(p0 == null || p1 == null){
                 return 0;
             }
@@ -29,14 +27,14 @@ class PokeApiPageSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, PokemonPreview>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, Pokemon>): Int? {
         val anchorPosition = state.anchorPosition ?: return null
         val page = state.closestPageToPosition(anchorPosition) ?: return null
 
         return page.prevKey?.plus(1) ?: page.nextKey?.minus(1)
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PokemonPreview> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Pokemon> {
         if (initialPage <= 0) {
             return LoadResult.Page(
                 data = emptyList(),
@@ -50,7 +48,7 @@ class PokeApiPageSource(
 
         val response = pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
 
-        val resultList = response.toDomain()
+        val resultList = response.toPreloaded()
         cachedPreviews.value?.addAll(resultList)
         cachedPreviews.postValue(cachedPreviews.value)
 

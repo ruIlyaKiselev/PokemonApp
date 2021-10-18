@@ -5,12 +5,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
+import com.example.pokemonapp.domain.Converters.Companion.toPreloaded
 import com.example.pokemonapp.domain.Pokemon
-import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.network.PokeApiContract
 import com.example.pokemonapp.network.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -37,8 +40,8 @@ class PokemonRepositoryImpl(
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private val mutex = Mutex()
 
-    override suspend fun loadPokemonList(limit: Int, offset: Int): List<PokemonPreview> {
-        return pokeApiService.getPokemonList(limit, offset).toDomain()
+    override suspend fun loadPokemonList(limit: Int, offset: Int): List<Pokemon> {
+        return pokeApiService.getPokemonList(limit, offset).toPreloaded()
     }
 
     override suspend fun loadPokemonDetailsById(pokemonId: Int): Pokemon {
@@ -63,7 +66,7 @@ class PokemonRepositoryImpl(
         }
     }
 
-    override fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview> {
+    override fun getPokemonPager(initialPage: Int): Pager<Int, Pokemon> {
 
         pokeApiPageSource = PokeApiPageSource(pokeApiService, initialPage)
 
