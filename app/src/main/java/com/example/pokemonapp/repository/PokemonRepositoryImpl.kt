@@ -47,7 +47,7 @@ class PokemonRepositoryImpl(
             restoredPokemon[0]
         } else {
             val loadedPokemon = pokeApiService.getPokemonDetailsById(pokemonId).toDomain()
-            storedPokemons.value!!.add(loadedPokemon)
+            storedPokemons.value?.add(loadedPokemon)
             loadedPokemon
         }
     }
@@ -58,7 +58,7 @@ class PokemonRepositoryImpl(
             restoredPokemon[0]
         } else {
             val loadedPokemon = pokeApiService.getPokemonDetailsByName(pokemonName).toDomain()
-            storedPokemons.value!!.add(loadedPokemon)
+            storedPokemons.value?.add(loadedPokemon)
             loadedPokemon
         }
     }

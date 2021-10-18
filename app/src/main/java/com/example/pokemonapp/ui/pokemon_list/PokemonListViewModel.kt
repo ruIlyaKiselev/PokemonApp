@@ -5,14 +5,17 @@ import androidx.lifecycle.*
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 
@@ -27,7 +30,16 @@ class PokemonListViewModel @Inject constructor(
     private var pokemonPager = pokemonRepository.getPokemonPager(1)
     var pokemons: StateFlow<PagingData<PokemonPreview>> = getPokemonsStateFlow()
 
-    var storedPokemons = pokemonRepository.getStoredPokemons()
+    var storedPokemons: MutableLiveData<MutableSet<Pokemon>> = pokemonRepository.getStoredPokemons()
+
+    init {
+        storedPokemons.observeForever {
+            viewModelScope.launch {
+                delay(2000)
+                storedPokemons.postValue(storedPokemons.value)
+            }
+        }
+    }
 
     private fun getPokemonsStateFlow(): StateFlow<PagingData<PokemonPreview>>  {
         val stateFlow = pokemonPager

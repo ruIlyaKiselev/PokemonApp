@@ -86,7 +86,12 @@ class PokemonListFragment : Fragment() {
                 pokemon.id
             }
 
-            pagingAdapter.notifyPokemonLoaded(loadedPokemonsIdSet)
+            pagingAdapter.snapshot().forEach { pokemonPreview ->
+                if(loadedPokemonsIdSet.contains(pokemonPreview?.id)) {
+                    pokemonPreview?.loadedFullInfo = true
+                }
+            }
+            pagingAdapter.notifyDataSetChanged()
         }
 
         return view;
