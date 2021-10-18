@@ -52,8 +52,7 @@ class PokeApiPageSource(
 
         val resultList = response.toDomain()
         cachedPreviews.value?.addAll(resultList)
-        cachedPreviews.value = cachedPreviews.value
-        Log.d("MyLog", cachedPreviews.value?.map { it.id }.toString())
+        cachedPreviews.postValue(cachedPreviews.value)
 
         val nextPage = if (response.results!!.size < pageSize) null else page + 1
         val prevPage = if (page <= 1) null else page - 1

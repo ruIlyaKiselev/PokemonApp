@@ -61,4 +61,49 @@ class PokemonListViewModel @Inject constructor(
         pokemons = getPokemonsStateFlow()
     }
 
+    fun sortPokemons(
+        byAttack: Boolean,
+        byDefence: Boolean,
+        byHp: Boolean
+    ): List<Int> {
+
+        val sortedList = storedPokemons.value?.sortedWith(
+            PokemonComparator(byAttack, byDefence, byHp)
+        )
+
+        return sortedList?.map { it.id!! } ?: listOf()
+    }
+
+    private class PokemonComparator(
+        private val byAttack: Boolean,
+        private val byDefence: Boolean,
+        private val byHp: Boolean
+    ): Comparator<Pokemon> {
+        override fun compare(p0: Pokemon?, p1: Pokemon?): Int {
+
+            if(p0 == null || p1 == null) {
+                return 0;
+            }
+
+            var p0Sum = 0
+            var p1Sum = 0
+
+            if (byAttack) {
+                p0Sum += p0.stats!!.attack!!
+                p1Sum += p1.stats!!.attack!!
+            }
+
+            if (byDefence) {
+                p0Sum += p0.stats!!.defence!!
+                p1Sum += p1.stats!!.defence!!
+            }
+
+            if (byHp) {
+                p0Sum += p0.stats!!.hp!!
+                p1Sum += p1.stats!!.hp!!
+            }
+
+            return p0Sum.compareTo(p1Sum)
+        }
+    }
 }

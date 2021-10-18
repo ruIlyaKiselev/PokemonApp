@@ -74,7 +74,6 @@ class PokemonRepositoryImpl(
                     mutex.withLock {
                         storedPokemons.value!!.add(loadPokemonDetailsById(pokemonPreview.id ?: 0))
                     }
-                    Log.d("MyLog", storedPokemons.value!!.map { it.id }.toString())
                 }
             }
         }

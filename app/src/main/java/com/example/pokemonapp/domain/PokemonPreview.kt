@@ -1,9 +1,9 @@
 package com.example.pokemonapp.domain
 
 data class PokemonPreview (
-    val id: Int?,
-    val pokemonName: String?,
-    val imageUrl: String?
+    var id: Int?,
+    var pokemonName: String?,
+    var imageUrl: String?
 ) {
     var loadedFullInfo: Boolean = false
 }

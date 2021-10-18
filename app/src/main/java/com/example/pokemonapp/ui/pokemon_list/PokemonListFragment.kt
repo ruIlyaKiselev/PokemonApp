@@ -81,6 +81,13 @@ class PokemonListFragment : Fragment() {
             loadDataFromPageSource()
         }
 
+        configurePokemonDetailsLoadingToRecyclerView()
+        configureCheckBoxes()
+
+        return view;
+    }
+
+    private fun configurePokemonDetailsLoadingToRecyclerView() {
         viewModel.storedPokemons.observe(viewLifecycleOwner) {
             val loadedPokemonsIdSet = it.map { pokemon ->
                 pokemon.id
@@ -91,10 +98,35 @@ class PokemonListFragment : Fragment() {
                     pokemonPreview?.loadedFullInfo = true
                 }
             }
+
             pagingAdapter.notifyDataSetChanged()
         }
+    }
 
-        return view;
+    private fun configureCheckBoxes() {
+        binding.apply {
+            mainScreenAttackCheckBox.setOnCheckedChangeListener { compoundButton, b ->
+                sortPokemons()
+            }
+
+            mainScreenDefenceCheckBox.setOnCheckedChangeListener { compoundButton, b ->
+                sortPokemons()
+            }
+
+            mainScreenHpCheckBox.setOnCheckedChangeListener { compoundButton, b ->
+                sortPokemons()
+            }
+        }
+    }
+
+    private fun sortPokemons() {
+        binding.apply {
+            viewModel.sortPokemons(
+                byAttack = mainScreenAttackCheckBox.isChecked,
+                byDefence = mainScreenDefenceCheckBox.isChecked,
+                byHp = mainScreenHpCheckBox.isChecked,
+            )
+        }
     }
 
     private fun loadDataFromPageSource() {
