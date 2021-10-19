@@ -10,7 +10,8 @@ interface PokemonRepository {
     suspend fun loadPokemonDetailsById(pokemonId: Int): Pokemon
     suspend fun loadPokemonDetailsByName(pokemonName: String): Pokemon
 
-    fun getPokemonPager(initialPage: Int): Pager<Int, Pokemon>
+    fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview>
     fun getStoredPokemons(): MutableLiveData<MutableSet<Pokemon>>
     fun clearStoredPokemons()
+    fun stopLoading()
 }

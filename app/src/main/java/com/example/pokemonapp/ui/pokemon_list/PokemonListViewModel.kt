@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.pokemonapp.domain.Pokemon
+import com.example.pokemonapp.domain.PokemonPreview
+import com.example.pokemonapp.domain.getStatsSum
 import com.example.pokemonapp.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -27,7 +29,7 @@ class PokemonListViewModel @Inject constructor(
     val pokemonList: LiveData<MutableList<Pokemon>> = mutablePokemonList
 
     private var pokemonPager = pokemonRepository.getPokemonPager(1)
-    var pokemons: StateFlow<PagingData<Pokemon>> = getPokemonsStateFlow()
+    var pokemons: StateFlow<PagingData<PokemonPreview>> = getPokemonsStateFlow()
 
     var storedPokemons: MutableLiveData<MutableSet<Pokemon>> = pokemonRepository.getStoredPokemons()
 
@@ -40,7 +42,7 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
-    private fun getPokemonsStateFlow(): StateFlow<PagingData<Pokemon>>  {
+    private fun getPokemonsStateFlow(): StateFlow<PagingData<PokemonPreview>>  {
         val stateFlow = pokemonPager
             .flow
             .cachedIn(viewModelScope)
@@ -56,6 +58,7 @@ class PokemonListViewModel @Inject constructor(
     }
 
     fun resetPokemonPagerRandomly() {
+//        pokemonRepository.stopLoading()
         pokemonPager = pokemonRepository.getPokemonPager((1..20).random())
         pokemons = getPokemonsStateFlow()
     }
@@ -84,23 +87,8 @@ class PokemonListViewModel @Inject constructor(
                 return 0;
             }
 
-            var p0Sum = 0
-            var p1Sum = 0
-
-            if (byAttack) {
-                p0Sum += p0.stats!!.attack!!
-                p1Sum += p1.stats!!.attack!!
-            }
-
-            if (byDefence) {
-                p0Sum += p0.stats!!.defence!!
-                p1Sum += p1.stats!!.defence!!
-            }
-
-            if (byHp) {
-                p0Sum += p0.stats!!.hp!!
-                p1Sum += p1.stats!!.hp!!
-            }
+            val p0Sum = p0.getStatsSum(byAttack, byDefence, byHp)
+            val p1Sum = p1.getStatsSum(byAttack, byDefence, byHp)
 
             return p1Sum.compareTo(p0Sum)
         }

@@ -1,11 +1,11 @@
 package com.example.pokemonapp.ui.pokemon_list
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pokemonapp.R
 import com.example.pokemonapp.databinding.FragmentPokemonListBinding
 import com.example.pokemonapp.domain.Pokemon
+import com.example.pokemonapp.domain.getStatsSum
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonLoaderStateAdapter
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonPagingDataAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,6 +23,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @AndroidEntryPoint
 class PokemonListFragment : Fragment() {
@@ -35,6 +38,7 @@ class PokemonListFragment : Fragment() {
 
     private val job = Job()
     private val uiScope = CoroutineScope(Dispatchers.Main)
+    private val mutex = Mutex()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,9 +71,9 @@ class PokemonListFragment : Fragment() {
 
         pagingAdapter.addLoadStateListener { state: CombinedLoadStates ->
             if (state.refresh == LoadState.Loading) {
-                binding.progressBar.visibility= View.VISIBLE
+                binding.progressBar.visibility = View.VISIBLE
             } else {
-                binding.progressBar.visibility= View.GONE
+                binding.progressBar.visibility = View.GONE
             }
         }
 
@@ -88,15 +92,16 @@ class PokemonListFragment : Fragment() {
 
     private fun configurePokemonDetailsLoadingToRecyclerView() {
         viewModel.storedPokemons.observe(viewLifecycleOwner) { updatedPokemons ->
-            pagingAdapter.snapshot().forEach { preloadedPokemon ->
-                val updatedPokemon = updatedPokemons.find {
-                    it.id == preloadedPokemon?.id
+            pagingAdapter.snapshot().forEach { pokemonPreview ->
+
+                val updatedPokemonList = updatedPokemons.filter {
+                    it.id == pokemonPreview?.id
                 }
 
-                preloadedPokemon?.height = updatedPokemon?.height
-                preloadedPokemon?.weight = updatedPokemon?.weight
-                preloadedPokemon?.stats = updatedPokemon?.stats
-                preloadedPokemon?.type = updatedPokemon?.type ?: listOf()
+                if (updatedPokemonList.isNotEmpty()) {
+                    pokemonPreview?.loadedFullInfo = true
+                }
+
             }
 
             pagingAdapter.notifyDataSetChanged()
@@ -106,20 +111,36 @@ class PokemonListFragment : Fragment() {
     private fun configureCheckBoxes() {
         binding.apply {
             mainScreenAttackCheckBox.setOnCheckedChangeListener { compoundButton, b ->
-                sortPokemons()
+                sortPokemons(
+                    byAttack = mainScreenAttackCheckBox.isSelected,
+                    byDefence = mainScreenDefenceCheckBox.isSelected,
+                    byHp = mainScreenHpCheckBox.isSelected,
+                )
             }
 
             mainScreenDefenceCheckBox.setOnCheckedChangeListener { compoundButton, b ->
-                sortPokemons()
+                sortPokemons(
+                    byAttack = mainScreenAttackCheckBox.isSelected,
+                    byDefence = mainScreenDefenceCheckBox.isSelected,
+                    byHp = mainScreenHpCheckBox.isSelected,
+                )
             }
 
             mainScreenHpCheckBox.setOnCheckedChangeListener { compoundButton, b ->
-                sortPokemons()
+                sortPokemons(
+                    byAttack = mainScreenAttackCheckBox.isSelected,
+                    byDefence = mainScreenDefenceCheckBox.isSelected,
+                    byHp = mainScreenHpCheckBox.isSelected,
+                )
             }
         }
     }
 
-    private fun sortPokemons() {
+    private fun sortPokemons(
+        byAttack: Boolean,
+        byDefence: Boolean,
+        byHp: Boolean
+    ) {
         var loadedPokemonList: List<Pokemon>
 
         binding.apply {
@@ -130,15 +151,16 @@ class PokemonListFragment : Fragment() {
             )
         }
 
-        for (i in loadedPokemonList.indices) {
-            pagingAdapter.snapshot()[i]?.apply {
-                id = loadedPokemonList[i].id
-                pokemonName = loadedPokemonList[i].pokemonName
-                imageUrl = loadedPokemonList[i].imageUrl
-                height = loadedPokemonList[i].height
-                weight = loadedPokemonList[i].weight
-                stats = loadedPokemonList[i].stats
-                type = loadedPokemonList[i].type
+        var currentListIndex = 0
+        loadedPokemonList.forEachIndexed { i: Int, pokemon: Pokemon ->
+            if (pagingAdapter.snapshot().size > currentListIndex) {
+                pagingAdapter.snapshot()[currentListIndex]?.apply {
+                    id = loadedPokemonList[i].id
+                    pokemonName = loadedPokemonList[i].pokemonName
+                    imageUrl = loadedPokemonList[i].imageUrl
+                    isBest = false
+                }
+                currentListIndex++
             }
         }
     }

@@ -11,14 +11,14 @@ import com.example.pokemonapp.domain.PokemonPreview
 class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
     private val initialPage: Int
-): PagingSource<Int, Pokemon>() {
+): PagingSource<Int, PokemonPreview>() {
 
-    var cachedPreviews: MutableLiveData<MutableSet<Pokemon>> = MutableLiveData(
+    var cachedPreviews: MutableLiveData<MutableSet<PokemonPreview>> = MutableLiveData(
         sortedSetOf(PokemonPreviewSetComparator())
     )
 
-    class PokemonPreviewSetComparator: Comparator<Pokemon> {
-        override fun compare(p0: Pokemon?, p1: Pokemon?): Int {
+    class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
+        override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
             if(p0 == null || p1 == null){
                 return 0;
             }
@@ -27,14 +27,14 @@ class PokeApiPageSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, Pokemon>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, PokemonPreview>): Int? {
         val anchorPosition = state.anchorPosition ?: return null
         val page = state.closestPageToPosition(anchorPosition) ?: return null
 
         return page.prevKey?.plus(1) ?: page.nextKey?.minus(1)
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Pokemon> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PokemonPreview> {
         if (initialPage <= 0) {
             return LoadResult.Page(
                 data = emptyList(),
@@ -48,7 +48,7 @@ class PokeApiPageSource(
 
         val response = pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
 
-        val resultList = response.toPreloaded()
+        val resultList = response.toDomain()
         cachedPreviews.value?.addAll(resultList)
         cachedPreviews.postValue(cachedPreviews.value)
 

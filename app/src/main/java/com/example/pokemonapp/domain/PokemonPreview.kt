@@ -6,4 +6,5 @@ data class PokemonPreview (
     var imageUrl: String?
 ) {
     var loadedFullInfo: Boolean = false
+    var isBest: Boolean = false
 }

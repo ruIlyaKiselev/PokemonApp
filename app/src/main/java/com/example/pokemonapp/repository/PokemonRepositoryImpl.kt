@@ -7,6 +7,7 @@ import androidx.paging.PagingConfig
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
 import com.example.pokemonapp.domain.Converters.Companion.toPreloaded
 import com.example.pokemonapp.domain.Pokemon
+import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.network.PokeApiContract
 import com.example.pokemonapp.network.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
@@ -66,20 +67,11 @@ class PokemonRepositoryImpl(
         }
     }
 
-    override fun getPokemonPager(initialPage: Int): Pager<Int, Pokemon> {
+    override fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview> {
 
         pokeApiPageSource = PokeApiPageSource(pokeApiService, initialPage)
 
-        pokeApiPageSource?.cachedPreviews?.observeForever { pokemonPreviewSet ->
-            Log.d("MyLog", "Update!!!")
-            pokemonPreviewSet.forEach { pokemonPreview ->
-                ioScope.launch {
-                    mutex.withLock {
-                        storedPokemons.value!!.add(loadPokemonDetailsById(pokemonPreview.id ?: 0))
-                    }
-                }
-            }
-        }
+        loadPokemonDetails()
 
         return Pager(
             PagingConfig(
@@ -91,6 +83,23 @@ class PokemonRepositoryImpl(
         }
     }
 
+    private fun loadPokemonDetails() {
+        pokeApiPageSource?.cachedPreviews?.observeForever { pokemonPreviewSet ->
+            Log.d("MyLog", "Update!!!")
+            pokemonPreviewSet.forEach { pokemonPreview ->
+                ioScope.launch {
+                    mutex.withLock {
+                        storedPokemons.value!!.add(loadPokemonDetailsById(pokemonPreview.id ?: 0))
+                    }
+                }
+            }
+        }
+    }
+
     override fun getStoredPokemons(): MutableLiveData<MutableSet<Pokemon>> = storedPokemons
     override fun clearStoredPokemons() = storedPokemons.value!!.clear()
+
+    override fun stopLoading() {
+        job.cancel()
+    }
 }
