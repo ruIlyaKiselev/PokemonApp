@@ -1,5 +1,6 @@
 package com.example.pokemonapp.di
 
+import com.example.pokemonapp.database.PokemonAppDatabase
 import com.example.pokemonapp.network.PokeApiService
 import com.example.pokemonapp.repository.PokemonRepository
 import com.example.pokemonapp.repository.PokemonRepositoryImpl
@@ -15,8 +16,9 @@ object RepositoryModule {
     @Singleton
     @Provides
     fun providePokemonRepository(
-        pokeApiService: PokeApiService
+        pokeApiService: PokeApiService,
+        pokemonAppDatabase: PokemonAppDatabase
     ): PokemonRepository {
-        return PokemonRepositoryImpl(pokeApiService)
+        return PokemonRepositoryImpl(pokeApiService, pokemonAppDatabase)
     }
 }

@@ -3,8 +3,10 @@ package com.example.pokemonapp.repository
 import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import com.example.pokemonapp.domain.Converters.Companion.toDomain
-import com.example.pokemonapp.domain.Converters.Companion.toPreloaded
+import com.example.pokemonapp.database.PokemonAppDatabase
+import com.example.pokemonapp.domain.Converters.toDomain
+import com.example.pokemonapp.domain.Converters.toEntity
+import com.example.pokemonapp.domain.Converters.toPreloaded
 import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.network.PokeApiContract
@@ -13,17 +15,15 @@ import com.example.pokemonapp.network.PokeApiService
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class PokemonRepositoryImpl(
-    private val pokeApiService: PokeApiService
+    private val pokeApiService: PokeApiService,
+    private val pokemonAppDatabase: PokemonAppDatabase,
 ): PokemonRepository {
     private var cachedPokemons: MutableSet<Pokemon> = sortedSetOf(PokemonSetComparator())
     private var pokemonsSubject = PublishSubject.create<Pokemon>()
@@ -67,6 +67,7 @@ class PokemonRepositoryImpl(
                 cachedPokemons.add(loadedPokemon)
 
             } catch (e: Exception) {
+                loadedPokemon = pokemonAppDatabase.dao.getPokemonById(pokemonId).toDomain()
                 Log.e("MyLog", e.toString())
             }
             loadedPokemon ?: Pokemon(null, null, null)
@@ -92,7 +93,7 @@ class PokemonRepositoryImpl(
 
     override fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview> {
 
-        pokeApiPageSource = PokeApiPageSource(pokeApiService, initialPage)
+        pokeApiPageSource = PokeApiPageSource(pokeApiService, initialPage, pokemonAppDatabase)
 
         initPageSource()
 
@@ -120,6 +121,10 @@ class PokemonRepositoryImpl(
                             val loadedPokemon = loadPokemonDetailsById(it.id!!)
                             cachedPokemons.add(loadedPokemon)
                             pokemonsSubject.onNext(loadedPokemon)
+
+                            async {
+                                pokemonAppDatabase.dao.insertPokemon(loadedPokemon.toEntity())
+                            }
                         }
                     }
                 }
@@ -141,4 +146,6 @@ class PokemonRepositoryImpl(
             it.cancel()
         }
     }
+
+    override fun getTotalPokemonsCount(): Int = pokeApiPageSource?.totalPokemonsOnServer ?: 0
 }

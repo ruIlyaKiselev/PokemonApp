@@ -41,7 +41,6 @@ class PokemonListFragment : Fragment() {
 
     private val job = Job()
     private val uiScope = CoroutineScope(Dispatchers.Main)
-    private val mutex = Mutex()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -84,7 +83,7 @@ class PokemonListFragment : Fragment() {
 
         binding.floatingActionButton.setOnClickListener {
             viewModel.resetPokemonPagerRandomly()
-            loadDataFromPageSource()
+            pagingAdapter.snapshot()
         }
 
         configurePokemonDetailsLoadingToRecyclerView()
@@ -163,6 +162,8 @@ class PokemonListFragment : Fragment() {
             pagingAdapter.snapshot()[i]?.isBest = true
         }
 
+        pagingAdapter.notifyDataSetChanged()
+        binding.pokemonListRecyclerView.smoothScrollToPosition(0)
         pagingAdapter.notifyDataSetChanged()
     }
 

@@ -15,15 +15,15 @@ data class PokemonEntity (
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_ID)
     val id: Int = 0,
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_POKEMON_NAME)
-    val pokemonName: String,
+    val pokemonName: String = "",
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_IMAGE_URL)
-    val imageUrl: Int = 0,
+    val imageUrl: String = "",
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_HEIGHT)
     val height: Int = 0,
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_WEIGHT)
     val weight: Int = 0,
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_TYPE)
-    val type: List<String>,
+    val type: List<String?> = listOf(),
     @ColumnInfo(name = RoomContract.Pokemon.COLUMN_NAME_STATS)
     val stats: StatsEntity
 )

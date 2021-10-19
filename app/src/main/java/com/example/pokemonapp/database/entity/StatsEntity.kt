@@ -15,15 +15,15 @@ data class StatsEntity (
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_ID)
     val id: Int = 0,
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_HP)
-    val hp: String,
+    val hp: Int = 0,
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_ATTACK)
-    val attack: String,
+    val attack: Int = 0,
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_DEFENCE)
-    val defence: String,
+    val defence: Int = 0,
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_SPECIAL_ATTACK)
-    val specialAttack: String,
+    val specialAttack: Int = 0,
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_SPECIAL_DEFENCE)
-    val specialDefence: String,
+    val specialDefence: Int = 0,
     @ColumnInfo(name = RoomContract.Stats.COLUMN_NAME_SPEED)
-    val speed: String,
+    val speed: Int = 0,
 )

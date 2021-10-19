@@ -1,5 +1,6 @@
 package com.example.pokemonapp.di
 
+import com.example.pokemonapp.database.PokemonAppDatabase
 import com.example.pokemonapp.network.PokeApiContract
 import com.example.pokemonapp.network.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
@@ -48,10 +49,11 @@ object NetworkModule {
     @Singleton
     @Provides
     fun providePokeApiPageSource(
-        pokeApiService: PokeApiService
+        pokeApiService: PokeApiService,
+        database: PokemonAppDatabase
     ): PokeApiPageSource {
         return PokeApiPageSource(
-            pokeApiService, 2
+            pokeApiService, 2, database
         )
     }
 }

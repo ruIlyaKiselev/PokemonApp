@@ -13,7 +13,11 @@ interface PokemonRepository {
 
     fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview>
     fun getPokemonsSubject(): PublishSubject<Pokemon>
+
     fun getStoredPokemons(): Set<Pokemon>
     fun clearStoredPokemons()
+
     fun stopLoading()
+
+    fun getTotalPokemonsCount(): Int
 }
