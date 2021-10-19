@@ -50,15 +50,11 @@ class PokemonViewHolder(
             }
 
             if (pokemonPreview.isBest) {
-                rcItemCardView.background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    setStroke(2, Color.RED)
-                }
+                rcItemCardView.strokeColor = Color.YELLOW
+                rcItemCardView.strokeWidth = 2
             } else {
-                rcItemCardView.background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    setStroke(0, Color.RED)
-                }
+                rcItemCardView.strokeColor = Color.TRANSPARENT
+                rcItemCardView.strokeWidth = 0
             }
 
             root.setOnClickListener {

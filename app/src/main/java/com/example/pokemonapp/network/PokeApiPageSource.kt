@@ -1,21 +1,19 @@
 package com.example.pokemonapp.network
 
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.pokemonapp.domain.Converters.Companion.toDomain
-import com.example.pokemonapp.domain.Converters.Companion.toPreloaded
-import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
+import io.reactivex.rxjava3.subjects.PublishSubject
+import java.util.*
 
 class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
     private val initialPage: Int
 ): PagingSource<Int, PokemonPreview>() {
 
-    var cachedPreviews: MutableLiveData<MutableSet<PokemonPreview>> = MutableLiveData(
-        sortedSetOf(PokemonPreviewSetComparator())
-    )
+    var cachedPreviews: MutableSet<PokemonPreview> = sortedSetOf(PokemonPreviewSetComparator())
+    var pokemonsSubject = PublishSubject.create<PokemonPreview>()
 
     class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
         override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
@@ -46,13 +44,27 @@ class PokeApiPageSource(
         val page: Int = params.key ?: initialPage
         val pageSize: Int = params.loadSize.coerceAtLeast(PokeApiContract.ITEMS_PER_PAGE)
 
-        val response = pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
+        val response = try {
+            pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
+        } catch (e: Exception) {
+            null
+        }
 
-        val resultList = response.toDomain()
-        cachedPreviews.value?.addAll(resultList)
-        cachedPreviews.postValue(cachedPreviews.value)
+        val resultList = response?.toDomain() ?: listOf()
+        cachedPreviews.addAll(resultList)
 
-        val nextPage = if (response.results!!.size < pageSize) null else page + 1
+        resultList.forEach {
+            pokemonsSubject.onNext(it)
+        }
+
+        var nextPage: Int? = 0
+
+        nextPage = if (response?.results != null) {
+            if (response.results.size < pageSize) null else page + 1
+        } else {
+            null
+        }
+
         val prevPage = if (page <= 1) null else page - 1
 
         return LoadResult.Page(resultList, prevPage, nextPage)

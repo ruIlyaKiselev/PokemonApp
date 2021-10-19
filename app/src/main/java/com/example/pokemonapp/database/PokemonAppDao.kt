@@ -12,6 +12,8 @@ interface PokemonAppDao {
     suspend fun getAllPokemons(): List<PokemonEntity>
     @Query("SELECT * FROM Pokemon WHERE _id == :id")
     suspend fun getPokemonById(id: Int): PokemonEntity
+    @Query("SELECT * FROM Pokemon WHERE _id > (:page - 1) * ")
+    suspend fun getPokemonsPage(page: Int): List<PokemonEntity>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPokemon(pokemon: PokemonEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE)

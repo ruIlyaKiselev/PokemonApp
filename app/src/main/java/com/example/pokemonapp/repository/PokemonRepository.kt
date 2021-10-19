@@ -1,9 +1,10 @@
 package com.example.pokemonapp.repository
 
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.Pager
 import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 
 interface PokemonRepository {
     suspend fun loadPokemonList(limit: Int, offset: Int): List<Pokemon>
@@ -11,7 +12,8 @@ interface PokemonRepository {
     suspend fun loadPokemonDetailsByName(pokemonName: String): Pokemon
 
     fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview>
-    fun getStoredPokemons(): MutableLiveData<MutableSet<Pokemon>>
+    fun getPokemonsSubject(): PublishSubject<Pokemon>
+    fun getStoredPokemons(): Set<Pokemon>
     fun clearStoredPokemons()
     fun stopLoading()
 }

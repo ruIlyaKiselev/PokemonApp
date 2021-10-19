@@ -1,6 +1,7 @@
 package com.example.pokemonapp.ui.pokemon_list
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,13 +19,15 @@ import com.example.pokemonapp.domain.getStatsSum
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonLoaderStateAdapter
 import com.example.pokemonapp.ui.pokemon_recycler_view.PokemonPagingDataAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class PokemonListFragment : Fragment() {
@@ -91,65 +94,57 @@ class PokemonListFragment : Fragment() {
     }
 
     private fun configurePokemonDetailsLoadingToRecyclerView() {
-        viewModel.storedPokemons.observe(viewLifecycleOwner) { updatedPokemons ->
-            pagingAdapter.snapshot().forEach { pokemonPreview ->
-
-                val updatedPokemonList = updatedPokemons.filter {
-                    it.id == pokemonPreview?.id
+        viewModel.pokemonsObservable
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+            { emittedValue ->
+                val associatedValueIndex = pagingAdapter.snapshot().indexOfFirst {
+                    it?.id == emittedValue.id
                 }
 
-                if (updatedPokemonList.isNotEmpty()) {
-                    pokemonPreview?.loadedFullInfo = true
-                }
-
+                pagingAdapter.snapshot()[associatedValueIndex]?.loadedFullInfo = true
+                pagingAdapter.notifyItemChanged(associatedValueIndex)
+            },
+            {
+                Log.e("MyLog", it.toString())
             }
-
-            pagingAdapter.notifyDataSetChanged()
-        }
+        )
     }
 
     private fun configureCheckBoxes() {
         binding.apply {
             mainScreenAttackCheckBox.setOnCheckedChangeListener { compoundButton, b ->
-                sortPokemons(
-                    byAttack = mainScreenAttackCheckBox.isSelected,
-                    byDefence = mainScreenDefenceCheckBox.isSelected,
-                    byHp = mainScreenHpCheckBox.isSelected,
-                )
+                sortPokemons()
             }
 
             mainScreenDefenceCheckBox.setOnCheckedChangeListener { compoundButton, b ->
-                sortPokemons(
-                    byAttack = mainScreenAttackCheckBox.isSelected,
-                    byDefence = mainScreenDefenceCheckBox.isSelected,
-                    byHp = mainScreenHpCheckBox.isSelected,
-                )
+                sortPokemons()
             }
 
             mainScreenHpCheckBox.setOnCheckedChangeListener { compoundButton, b ->
-                sortPokemons(
-                    byAttack = mainScreenAttackCheckBox.isSelected,
-                    byDefence = mainScreenDefenceCheckBox.isSelected,
-                    byHp = mainScreenHpCheckBox.isSelected,
-                )
+                sortPokemons()
             }
         }
     }
 
-    private fun sortPokemons(
-        byAttack: Boolean,
-        byDefence: Boolean,
-        byHp: Boolean
-    ) {
+    private fun sortPokemons() {
+        val byAttack = binding.mainScreenAttackCheckBox.isChecked
+        val byDefence = binding.mainScreenDefenceCheckBox.isChecked
+        val byHp = binding.mainScreenHpCheckBox.isChecked
+
         var loadedPokemonList: List<Pokemon>
 
+
         binding.apply {
-            loadedPokemonList = viewModel.sortPokemons(
-                byAttack = mainScreenAttackCheckBox.isChecked,
-                byDefence = mainScreenDefenceCheckBox.isChecked,
-                byHp = mainScreenHpCheckBox.isChecked,
-            )
+            loadedPokemonList = viewModel.sortPokemons(byAttack, byDefence, byHp)
         }
+
+        val countOfBest = loadedPokemonList.count {
+            it.getStatsSum(byAttack, byDefence, byHp) ==
+                    loadedPokemonList[0].getStatsSum(byAttack, byDefence, byHp) &&
+                    loadedPokemonList[0].getStatsSum(byAttack, byDefence, byHp) != 0
+        } - 1
 
         var currentListIndex = 0
         loadedPokemonList.forEachIndexed { i: Int, pokemon: Pokemon ->
@@ -163,6 +158,12 @@ class PokemonListFragment : Fragment() {
                 currentListIndex++
             }
         }
+
+        for (i in 0..countOfBest) {
+            pagingAdapter.snapshot()[i]?.isBest = true
+        }
+
+        pagingAdapter.notifyDataSetChanged()
     }
 
     private fun loadDataFromPageSource() {

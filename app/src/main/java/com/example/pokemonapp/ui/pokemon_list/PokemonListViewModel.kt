@@ -12,12 +12,12 @@ import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.domain.getStatsSum
 import com.example.pokemonapp.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,16 +31,7 @@ class PokemonListViewModel @Inject constructor(
     private var pokemonPager = pokemonRepository.getPokemonPager(1)
     var pokemons: StateFlow<PagingData<PokemonPreview>> = getPokemonsStateFlow()
 
-    var storedPokemons: MutableLiveData<MutableSet<Pokemon>> = pokemonRepository.getStoredPokemons()
-
-    init {
-        storedPokemons.observeForever {
-            viewModelScope.launch {
-                delay(2000)
-                storedPokemons.postValue(storedPokemons.value)
-            }
-        }
-    }
+    val pokemonsObservable = pokemonRepository.getPokemonsSubject()
 
     private fun getPokemonsStateFlow(): StateFlow<PagingData<PokemonPreview>>  {
         val stateFlow = pokemonPager
@@ -69,11 +60,11 @@ class PokemonListViewModel @Inject constructor(
         byHp: Boolean
     ): List<Pokemon> {
 
-        val sortedList = storedPokemons.value?.sortedWith(
+        val sortedList = pokemonRepository.getStoredPokemons().sortedWith(
             PokemonComparator(byAttack, byDefence, byHp)
         )
 
-        return sortedList ?: listOf()
+        return sortedList
     }
 
     private class PokemonComparator(
