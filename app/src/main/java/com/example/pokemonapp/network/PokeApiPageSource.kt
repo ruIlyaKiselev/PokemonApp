@@ -1,23 +1,46 @@
 package com.example.pokemonapp.network
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.example.pokemonapp.domain.Converters.Companion.toDomain
+import com.example.pokemonapp.BaseApplication
+import com.example.pokemonapp.database.PokemonAppDatabase
+import com.example.pokemonapp.database.entity.AppInfoEntity
+import com.example.pokemonapp.domain.Converters.toDomain
 import com.example.pokemonapp.domain.PokemonPreview
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
-    private val initialPage: Int
+    private val initialPage: Int,
+    private val database: PokemonAppDatabase
 ): PagingSource<Int, PokemonPreview>() {
 
     var cachedPreviews: MutableSet<PokemonPreview> = sortedSetOf(PokemonPreviewSetComparator())
     var pokemonsSubject = PublishSubject.create<PokemonPreview>()
 
+    var totalPagesOnServer: Int = 0
+        set(value) {
+            if (value != 0) {
+                field = value
+            }
+        }
+    var totalPokemonsCount = 0
+        set(value) {
+            if (value != 0) {
+                field = value
+            }
+        }
+
+    private val job = Job()
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+
     class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
         override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
-            if(p0 == null || p1 == null){
+            if(p0 == null || p1 == null) {
                 return 0;
             }
 
@@ -49,6 +72,27 @@ class PokeApiPageSource(
         } catch (e: Exception) {
             null
         }
+
+        Log.d("MyLog777", response?.count.toString())
+        totalPokemonsCount = response?.count ?: 0
+
+        if (totalPagesOnServer == 0) {
+            ioScope.async {
+                val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
+                val currentDate = sdf.format(Date())
+
+                database.dao.deleteAppInfo()
+                database.dao.insertAppInfo(
+                    AppInfoEntity(
+                        currentDate,
+                        totalPokemonsCount
+                    )
+                )
+            }
+        }
+
+        totalPagesOnServer = totalPokemonsCount / (PokeApiContract.ITEMS_PER_PAGE) + 1
+        Log.d("MyLog777", totalPagesOnServer.toString())
 
         val resultList = response?.toDomain() ?: listOf()
         cachedPreviews.addAll(resultList)

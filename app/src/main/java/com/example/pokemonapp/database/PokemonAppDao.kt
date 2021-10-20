@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.pokemonapp.database.entity.AppInfoEntity
 import com.example.pokemonapp.database.entity.PokemonEntity
 import com.example.pokemonapp.network.PokeApiContract
 
@@ -25,4 +26,11 @@ interface PokemonAppDao {
     suspend fun deletePokemon(id: Int)
     @Query("DELETE FROM Pokemon")
     suspend fun deleteAllPokemons()
+
+    @Query("SELECT * FROM AppInfo")
+    suspend fun getAppInfo(): List<AppInfoEntity>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAppInfo(appInfo: AppInfoEntity)
+    @Query("DELETE FROM AppInfo WHERE _id NOT IN (SELECT MAX(_id) FROM AppInfo)")
+    suspend fun deleteAppInfo()
 }

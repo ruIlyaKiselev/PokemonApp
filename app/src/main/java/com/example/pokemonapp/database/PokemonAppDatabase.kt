@@ -5,12 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.pokemonapp.database.entity.AppInfoEntity
 import com.example.pokemonapp.database.entity.PokemonEntity
 import com.example.pokemonapp.database.entity.StatsEntity
 
 @Database(entities = [
     PokemonEntity::class,
     StatsEntity::class,
+    AppInfoEntity::class
     ],
     version = 1)
 @TypeConverters(Converters::class)

@@ -64,13 +64,13 @@ object Converters {
     )
 
     fun Pokemon.toEntity(): PokemonEntity = PokemonEntity(
-        id = id ?: 0,
+        pokemonId = id ?: 0,
         pokemonName = pokemonName ?: "",
         imageUrl = imageUrl ?: "",
         height = height ?: 0,
         weight = weight ?: 0,
         type = type,
-        stats = stats!!.toEntity()
+        stats = stats?.toEntity()
     )
 
     fun StatsEntity.toDomain(): Stats = Stats(
@@ -79,15 +79,15 @@ object Converters {
 
     fun PokemonEntity.toDomain(): Pokemon {
         val result = Pokemon(
-            id = id,
+            id = pokemonId,
             pokemonName = pokemonName,
             imageUrl = imageUrl
         )
 
         result.height = this.height
         result.weight = this.weight
-        result.stats = this.stats.toDomain()
-        result.type = this.type
+        result.type = this.type ?: listOf()
+        result.stats = this.stats?.toDomain()
 
         return result
     }

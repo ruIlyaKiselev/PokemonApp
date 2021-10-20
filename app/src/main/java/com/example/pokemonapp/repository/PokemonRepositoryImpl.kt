@@ -3,6 +3,7 @@ package com.example.pokemonapp.repository
 import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.PagingSource
 import com.example.pokemonapp.database.PokemonAppDatabase
 import com.example.pokemonapp.domain.Converters.toDomain
 import com.example.pokemonapp.domain.Converters.toEntity
@@ -12,7 +13,6 @@ import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.network.PokeApiContract
 import com.example.pokemonapp.network.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.*
@@ -37,13 +37,12 @@ class PokemonRepositoryImpl(
             return if (p0.id != null && p1.id != null) {
                 p0.id!!.compareTo(p1.id!!)
             } else 0
-
         }
     }
 
     private var pokeApiPageSource: PokeApiPageSource? = null
 
-    val listOfJob: MutableList<Job> = mutableListOf()
+    private val listOfJob: MutableList<Job> = mutableListOf()
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private val mutex = Mutex()
 
@@ -61,7 +60,7 @@ class PokemonRepositoryImpl(
         return if (restoredPokemon.isNotEmpty()) {
             restoredPokemon[0]
         } else {
-            var loadedPokemon: Pokemon? = null
+            var loadedPokemon: Pokemon?
             try {
                 loadedPokemon = pokeApiService.getPokemonDetailsById(pokemonId).toDomain()
                 cachedPokemons.add(loadedPokemon)
@@ -111,10 +110,9 @@ class PokemonRepositoryImpl(
         pokeApiPageSource?.pokemonsSubject
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(Schedulers.io())
-            ?.delay(50, TimeUnit.MILLISECONDS)
+//            ?.delay(50, TimeUnit.MILLISECONDS)
             ?.subscribe(
             {
-                Log.d("MyLog", "Update!!!")
                 val job = ioScope.launch {
                     mutex.withLock {
                         if (it.id != null) {
@@ -147,5 +145,5 @@ class PokemonRepositoryImpl(
         }
     }
 
-    override fun getTotalPokemonsCount(): Int = pokeApiPageSource?.totalPokemonsOnServer ?: 0
+    override fun getTotalPokemonsCount(): Int = pokeApiPageSource?.totalPagesOnServer ?: 1
 }
