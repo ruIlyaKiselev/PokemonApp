@@ -3,7 +3,6 @@ package com.example.pokemonapp.repository
 import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.PagingSource
 import com.example.pokemonapp.database.PokemonAppDatabase
 import com.example.pokemonapp.domain.Converters.toDomain
 import com.example.pokemonapp.domain.Converters.toEntity
@@ -18,13 +17,14 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.IOException
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class PokemonRepositoryImpl(
     private val pokeApiService: PokeApiService,
-    private val pokemonAppDatabase: PokemonAppDatabase,
+    private val database: PokemonAppDatabase
 ): PokemonRepository {
+
     private var cachedPokemons: MutableSet<Pokemon> = sortedSetOf(PokemonSetComparator())
     private var pokemonsSubject = PublishSubject.create<Pokemon>()
 
@@ -46,53 +46,57 @@ class PokemonRepositoryImpl(
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private val mutex = Mutex()
 
+    private val isConnected: Boolean
+
+    init {
+        isConnected = checkConnection()
+    }
+
     override suspend fun loadPokemonList(limit: Int, offset: Int): List<Pokemon> {
-        return try {
-            pokeApiService.getPokemonList(limit, offset).toPreloaded()
-        } catch (e: Exception) {
-            Log.e("MyLog", e.toString())
-            listOf()
+        return if (isConnected) {
+            try {
+                pokeApiService.getPokemonList(limit, offset).toPreloaded()
+            } catch (e: Exception) {
+                Log.e("MyLog", e.toString())
+                listOf()
+            }
+        } else {
+            try {
+                database.dao.getPokemonsPage(limit, offset).map { it.toDomain() }
+            } catch (e: Exception) {
+                Log.e("MyLog", e.toString())
+                listOf()
+            }
         }
     }
 
     override suspend fun loadPokemonDetailsById(pokemonId: Int): Pokemon {
-        val restoredPokemon = cachedPokemons.filter { pokemon -> pokemon.id == pokemonId }
-        return if (restoredPokemon.isNotEmpty()) {
-            restoredPokemon[0]
+        val restoredPokemon = cachedPokemons.find { pokemon -> pokemon.id == pokemonId }
+
+        return if (restoredPokemon != null) {
+            restoredPokemon
         } else {
-            var loadedPokemon: Pokemon?
-            try {
-                loadedPokemon = pokeApiService.getPokemonDetailsById(pokemonId).toDomain()
-                cachedPokemons.add(loadedPokemon)
-
-            } catch (e: Exception) {
-                loadedPokemon = pokemonAppDatabase.dao.getPokemonById(pokemonId).toDomain()
-                Log.e("MyLog", e.toString())
+            return if (isConnected) {
+                try {
+                    pokeApiService.getPokemonDetailsById(pokemonId).toDomain()
+                } catch (e: Exception) {
+                    Log.e("MyLog", e.toString())
+                    Pokemon(0, "", "")
+                }
+            } else {
+                try {
+                    database.dao.getPokemonById(pokemonId).toDomain()
+                } catch (e: Exception) {
+                    Log.e("MyLog", e.toString())
+                    Pokemon(0, "", "")
+                }
             }
-            loadedPokemon ?: Pokemon(null, null, null)
-        }
-    }
-
-    override suspend fun loadPokemonDetailsByName(pokemonName: String): Pokemon {
-        val restoredPokemon = cachedPokemons.filter { pokemon -> pokemon.pokemonName == pokemonName }
-        return if (restoredPokemon.isNotEmpty()) {
-            restoredPokemon[0]
-        } else {
-            var loadedPokemon: Pokemon? = null
-            try {
-                loadedPokemon = pokeApiService.getPokemonDetailsByName(pokemonName).toDomain()
-                cachedPokemons.add(loadedPokemon)
-
-            } catch (e: Exception) {
-                Log.e("MyLog", e.toString())
-            }
-            loadedPokemon ?: Pokemon(0, "", "")
         }
     }
 
     override fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview> {
 
-        pokeApiPageSource = PokeApiPageSource(pokeApiService, initialPage, pokemonAppDatabase)
+        pokeApiPageSource = PokeApiPageSource(pokeApiService, initialPage, database)
 
         initPageSource()
 
@@ -121,7 +125,7 @@ class PokemonRepositoryImpl(
                             pokemonsSubject.onNext(loadedPokemon)
 
                             async {
-                                pokemonAppDatabase.dao.insertPokemon(loadedPokemon.toEntity())
+                                database.dao.insertPokemon(loadedPokemon.toEntity())
                             }
                         }
                     }
@@ -146,4 +150,10 @@ class PokemonRepositoryImpl(
     }
 
     override fun getTotalPokemonsCount(): Int = pokeApiPageSource?.totalPagesOnServer ?: 1
+
+    @Throws(InterruptedException::class, IOException::class)
+    private fun checkConnection(): Boolean {
+        val command = "ping -c 1 pokeapi.co"
+        return Runtime.getRuntime().exec(command).waitFor() == 0
+    }
 }

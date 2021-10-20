@@ -15,9 +15,9 @@ interface PokemonAppDao {
     @Query("SELECT * FROM Pokemon WHERE _id == :id")
     suspend fun getPokemonById(id: Int): PokemonEntity
     @Query("SELECT * FROM Pokemon " +
-            "WHERE _id > (:page - 1) * ${PokeApiContract.ITEMS_PER_PAGE} " +
-            "AND _id < (:page) * ${PokeApiContract.ITEMS_PER_PAGE} + 1")
-    suspend fun getPokemonsPage(page: Int): List<PokemonEntity>
+            "WHERE _id > (:page - 1) * :pageSize " +
+            "AND _id < (:page) * :pageSize + 1")
+    suspend fun getPokemonsPage(page: Int, pageSize: Int): List<PokemonEntity>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPokemon(pokemon: PokemonEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE)

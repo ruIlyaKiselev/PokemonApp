@@ -1,15 +1,17 @@
 package com.example.pokemonapp.network
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.example.pokemonapp.BaseApplication
 import com.example.pokemonapp.database.PokemonAppDatabase
 import com.example.pokemonapp.database.entity.AppInfoEntity
 import com.example.pokemonapp.domain.Converters.toDomain
+import com.example.pokemonapp.domain.Converters.toPreview
 import com.example.pokemonapp.domain.PokemonPreview
 import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,8 +37,13 @@ class PokeApiPageSource(
             }
         }
 
-    private val job = Job()
     private val ioScope = CoroutineScope(Dispatchers.IO)
+
+    private var isConnected: Boolean
+
+    init {
+        isConnected = checkConnection()
+    }
 
     class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
         override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
@@ -67,32 +74,29 @@ class PokeApiPageSource(
         val page: Int = params.key ?: initialPage
         val pageSize: Int = params.loadSize.coerceAtLeast(PokeApiContract.ITEMS_PER_PAGE)
 
+        return if (isConnected) {
+            loadFromApi(pageSize, page)
+        } else {
+            loadFromDatabase(pageSize, page)
+        }
+    }
+
+    private suspend fun loadFromApi(pageSize: Int, page: Int): LoadResult.Page<Int, PokemonPreview> {
         val response = try {
             pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
         } catch (e: Exception) {
             null
         }
 
-        Log.d("MyLog777", response?.count.toString())
         totalPokemonsCount = response?.count ?: 0
 
         if (totalPagesOnServer == 0) {
             ioScope.async {
-                val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
-                val currentDate = sdf.format(Date())
-
-                database.dao.deleteAppInfo()
-                database.dao.insertAppInfo(
-                    AppInfoEntity(
-                        currentDate,
-                        totalPokemonsCount
-                    )
-                )
+                saveAppInfoToDatabase()
             }
         }
 
         totalPagesOnServer = totalPokemonsCount / (PokeApiContract.ITEMS_PER_PAGE) + 1
-        Log.d("MyLog777", totalPagesOnServer.toString())
 
         val resultList = response?.toDomain() ?: listOf()
         cachedPreviews.addAll(resultList)
@@ -101,9 +105,7 @@ class PokeApiPageSource(
             pokemonsSubject.onNext(it)
         }
 
-        var nextPage: Int? = 0
-
-        nextPage = if (response?.results != null) {
+        val nextPage: Int? = if (response?.results != null) {
             if (response.results.size < pageSize) null else page + 1
         } else {
             null
@@ -112,5 +114,40 @@ class PokeApiPageSource(
         val prevPage = if (page <= 1) null else page - 1
 
         return LoadResult.Page(resultList, prevPage, nextPage)
+    }
+
+    private suspend fun loadFromDatabase(pageSize: Int, page: Int) : LoadResult.Page<Int, PokemonPreview> {
+        totalPokemonsCount = database.dao.getAppInfo().last().countOfElements ?: 0
+        totalPagesOnServer = totalPokemonsCount / (PokeApiContract.ITEMS_PER_PAGE) + 1
+
+        val resultList = database.dao.getPokemonsPage(page, pageSize).map { it.toDomain().toPreview() }
+
+        resultList.forEach {
+            pokemonsSubject.onNext(it)
+        }
+
+        val nextPage: Int? = if (resultList.size < pageSize) null else page + 1
+        val prevPage = if (page <= 1) null else page - 1
+
+        return LoadResult.Page(resultList, prevPage, nextPage)
+    }
+
+    private suspend fun saveAppInfoToDatabase() {
+        val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
+        val currentDate = sdf.format(Date())
+
+        database.dao.deleteAppInfo()
+        database.dao.insertAppInfo(
+            AppInfoEntity(
+                currentDate,
+                totalPokemonsCount
+            )
+        )
+    }
+
+    @Throws(InterruptedException::class, IOException::class)
+    private fun checkConnection(): Boolean {
+        val command = "ping -c 1 pokeapi.co"
+        return Runtime.getRuntime().exec(command).waitFor() == 0
     }
 }

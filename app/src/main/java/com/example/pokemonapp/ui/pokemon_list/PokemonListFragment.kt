@@ -83,7 +83,7 @@ class PokemonListFragment : Fragment() {
 
         binding.floatingActionButton.setOnClickListener {
             viewModel.resetPokemonPagerRandomly()
-            pagingAdapter.notifyDataSetChanged()
+            loadDataFromPageSource()
         }
 
         configurePokemonDetailsLoadingToRecyclerView()

@@ -9,7 +9,6 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 interface PokemonRepository {
     suspend fun loadPokemonList(limit: Int, offset: Int): List<Pokemon>
     suspend fun loadPokemonDetailsById(pokemonId: Int): Pokemon
-    suspend fun loadPokemonDetailsByName(pokemonName: String): Pokemon
 
     fun getPokemonPager(initialPage: Int): Pager<Int, PokemonPreview>
     fun getPokemonsSubject(): PublishSubject<Pokemon>
