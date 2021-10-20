@@ -1,4 +1,4 @@
-package com.example.pokemonapp.network
+package com.example.pokemonapp.repository
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
@@ -7,6 +7,8 @@ import com.example.pokemonapp.database.entity.AppInfoEntity
 import com.example.pokemonapp.domain.Converters.toDomain
 import com.example.pokemonapp.domain.Converters.toPreview
 import com.example.pokemonapp.domain.PokemonPreview
+import com.example.pokemonapp.network.PokeApiContract
+import com.example.pokemonapp.network.PokeApiService
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +16,19 @@ import kotlinx.coroutines.async
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+/*
+*
+*   This is page source class for recyclerView; part of jetpack paging3
+*   Class supports online and offline mode, it pings pokeapi.co and depending from the result
+*   use online or offline mode.
+*
+*   When class downloads info from network, it emits this info to rxJava PublishSubject;
+*   Repository is listening PublishSubject from here and viewModels are listening
+*   PublishSubject from Repository; When something emits to PublishSubject, fragments associated
+*   with viewModels, react to this event (you can see in in PokemonListFragment).
+*
+*   When class downloads info from network, it stored new info to database as well.
+* */
 
 class PokeApiPageSource(
     private val pokeApiService: PokeApiService,
@@ -21,7 +36,6 @@ class PokeApiPageSource(
     private val database: PokemonAppDatabase
 ): PagingSource<Int, PokemonPreview>() {
 
-    var cachedPreviews: MutableSet<PokemonPreview> = sortedSetOf(PokemonPreviewSetComparator())
     var pokemonsSubject = PublishSubject.create<PokemonPreview>()
 
     var totalPagesOnServer: Int = 0
@@ -30,6 +44,7 @@ class PokeApiPageSource(
                 field = value
             }
         }
+
     var totalPokemonsCount = 0
         set(value) {
             if (value != 0) {
@@ -43,16 +58,6 @@ class PokeApiPageSource(
 
     init {
         isConnected = checkConnection()
-    }
-
-    class PokemonPreviewSetComparator: Comparator<PokemonPreview> {
-        override fun compare(p0: PokemonPreview?, p1: PokemonPreview?): Int {
-            if(p0 == null || p1 == null) {
-                return 0;
-            }
-
-            return p0.id!!.compareTo(p1.id!!)
-        }
     }
 
     override fun getRefreshKey(state: PagingState<Int, PokemonPreview>): Int? {
@@ -81,6 +86,9 @@ class PokeApiPageSource(
         }
     }
 
+    /*
+    *       Method for loading page from  API (online mode)
+    * */
     private suspend fun loadFromApi(pageSize: Int, page: Int): LoadResult.Page<Int, PokemonPreview> {
         val response = try {
             pokeApiService.getPokemonList(limit = pageSize, offset = (page - 1) * pageSize)
@@ -99,7 +107,6 @@ class PokeApiPageSource(
         totalPagesOnServer = totalPokemonsCount / (PokeApiContract.ITEMS_PER_PAGE) + 1
 
         val resultList = response?.toDomain() ?: listOf()
-        cachedPreviews.addAll(resultList)
 
         resultList.forEach {
             pokemonsSubject.onNext(it)
@@ -116,6 +123,9 @@ class PokeApiPageSource(
         return LoadResult.Page(resultList, prevPage, nextPage)
     }
 
+    /*
+    *   Method for loading page from database (offline mode)
+    * */
     private suspend fun loadFromDatabase(pageSize: Int, page: Int) : LoadResult.Page<Int, PokemonPreview> {
         totalPokemonsCount = database.dao.getAppInfo().last().countOfElements ?: 0
         totalPagesOnServer = totalPokemonsCount / (PokeApiContract.ITEMS_PER_PAGE) + 1
@@ -132,6 +142,9 @@ class PokeApiPageSource(
         return LoadResult.Page(resultList, prevPage, nextPage)
     }
 
+    /*
+    * Method for savind appInfo info (total count of pokemons from server and timestamp of save)
+    * */
     private suspend fun saveAppInfoToDatabase() {
         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
         val currentDate = sdf.format(Date())
@@ -145,6 +158,9 @@ class PokeApiPageSource(
         )
     }
 
+    /*
+    *       Method for check connection (api can be not available)
+    * */
     @Throws(InterruptedException::class, IOException::class)
     private fun checkConnection(): Boolean {
         val command = "ping -c 1 pokeapi.co"

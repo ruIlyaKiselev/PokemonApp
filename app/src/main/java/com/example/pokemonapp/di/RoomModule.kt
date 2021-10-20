@@ -11,6 +11,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RoomModule {
+
+
+    /*
+    * Provides room database with stored pokemons;
+    * If we have not loaded pokemons from api before, they will not be in database
+    * and recyclerView may  works not very well (show pokemon duplicates).
+    * */
     @Singleton
     @Provides
     fun providePokemonRoomDatabase(

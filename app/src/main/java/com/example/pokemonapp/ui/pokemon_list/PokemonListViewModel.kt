@@ -22,8 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
-    private val pokemonRepository: PokemonRepository,
-    private val database: PokemonAppDatabase
+    private val pokemonRepository: PokemonRepository
 ): ViewModel() {
 
     private var pokemonPager = pokemonRepository.getPokemonPager(1)
@@ -31,6 +30,10 @@ class PokemonListViewModel @Inject constructor(
 
     val pokemonsObservable: PublishSubject<Pokemon> = pokemonRepository.getPokemonsSubject()
 
+    /*
+    *   Method provides stateFlow from pokemon pager. PokemonListFragment subscribes to this
+    *   and react to new values (part of paging)
+    * */
     private fun getPokemonsStateFlow(): StateFlow<PagingData<PokemonPreview>>  {
         val stateFlow = pokemonPager
             .flow
@@ -43,6 +46,11 @@ class PokemonListViewModel @Inject constructor(
         return stateFlow
     }
 
+    /*
+    *    This function for reset page source for recyclerView when we click floating button
+    *    By default recyclerView have page 1, but this method moves recyclerView to random page
+    *    from 1 to maxCountOfPokemonsFromApi / pageSize + 1
+    * */
     fun resetPokemonPagerRandomly() {
         var totalPokemonsCount = pokemonRepository.getTotalPokemonsCount()
         if (totalPokemonsCount == 0) totalPokemonsCount = 1
@@ -55,6 +63,9 @@ class PokemonListViewModel @Inject constructor(
         pokemons = getPokemonsStateFlow()
     }
 
+    /*
+    *       This function for getting list of pokemons with order according to sum of selected specs
+    * */
     fun sortPokemons(
         byAttack: Boolean,
         byDefence: Boolean,
@@ -68,6 +79,9 @@ class PokemonListViewModel @Inject constructor(
         return sortedList
     }
 
+    /*
+    *   Comparator for combine all combination of checkboxes in listFragment
+    * */
     private class PokemonComparator(
         private val byAttack: Boolean,
         private val byDefence: Boolean,

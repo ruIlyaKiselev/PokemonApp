@@ -6,6 +6,17 @@ import com.example.pokemonapp.network.PokeApiContract
 import com.example.pokemonapp.network.model.pokemon_details.PokemonDetailsDto
 import com.example.pokemonapp.network.model.pokemon_list.PokemonListDto
 
+/*
+*       This is converters for data classes (entities layer of clear architecture);
+*       I use extensions for domain models, database models and retrofit models;
+*       Sometimes I use extensions for transform retrofit dto object to list of domain objects;
+*       I Think it's clear to understand;
+*       You can often see extension methods from here in another classes of project, their names:
+*          - .toDomain
+*          - .toEntity
+*          - .toPreloaded
+*          - .toPreview
+* */
 object Converters {
 
     fun PokemonDetailsDto.toDomain(): Pokemon {

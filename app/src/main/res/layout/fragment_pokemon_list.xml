@@ -46,6 +46,7 @@
             android:id="@+id/main_screen_attack_check_box"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:text="Attack"
             app:layout_constraintEnd_toStartOf="@+id/main_screen_defence_check_box"
             app:layout_constraintHorizontal_bias="0.5"
@@ -66,21 +67,11 @@
             android:id="@+id/main_screen_hp_check_box"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
             android:text="HP"
-            app:layout_constraintEnd_toStartOf="@+id/main_screen_help_button"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/main_screen_defence_check_box"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageButton
-            android:id="@+id/main_screen_help_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="@+id/main_screen_defence_check_box"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/main_screen_hp_check_box"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_help" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

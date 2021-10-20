@@ -2,7 +2,7 @@ package com.example.pokemonapp.di
 
 import com.example.pokemonapp.database.PokemonAppDatabase
 import com.example.pokemonapp.network.PokeApiContract
-import com.example.pokemonapp.network.PokeApiPageSource
+import com.example.pokemonapp.repository.PokeApiPageSource
 import com.example.pokemonapp.network.PokeApiService
 import dagger.Module
 import dagger.Provides
@@ -19,6 +19,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    /*
+    * Provides retrofit service with log interceptor, timeouts
+    * */
     @Singleton
     @Provides
     fun providePokeApiService(): PokeApiService {
@@ -46,6 +49,11 @@ object NetworkModule {
             .create(PokeApiService::class.java)
     }
 
+    /*
+    * Provides page source (jetpack paging3) for pagination;
+    * PokemonListViewModel use information from this, transforms it to state flow and gives
+    * that flow to RecyclerView in PokemonListFragment
+    * */
     @Singleton
     @Provides
     fun providePokeApiPageSource(
@@ -53,7 +61,7 @@ object NetworkModule {
         database: PokemonAppDatabase
     ): PokeApiPageSource {
         return PokeApiPageSource(
-            pokeApiService, 2, database
+            pokeApiService, 1, database
         )
     }
 }

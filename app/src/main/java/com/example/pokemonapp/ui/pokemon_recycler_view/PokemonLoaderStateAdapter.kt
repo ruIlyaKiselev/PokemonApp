@@ -9,7 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.pokemonapp.databinding.ItemErrorBinding
 import com.example.pokemonapp.databinding.ItemProgressBinding
 
-class PokemonLoaderStateAdapter(): LoadStateAdapter<PokemonLoaderStateAdapter.ItemViewHolder>() {
+
+/*
+*   State adapter - part of paging
+*   We use it for example to show loading, when recyclerView swipes too fast
+*   It's very common part of jetpack paging 3 and I think it's clear to understand
+*   I didn't add my own features here
+* */
+class PokemonLoaderStateAdapter: LoadStateAdapter<PokemonLoaderStateAdapter.ItemViewHolder>() {
 
     override fun getStateViewType(loadState: LoadState): Int {
         return when(loadState) {

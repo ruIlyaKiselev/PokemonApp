@@ -39,7 +39,6 @@ class PokemonDetailsFragment : Fragment() {
         )
 
         binding.lifecycleOwner = this
-
         val view: View = binding.root
 
         viewModel.loadPokemonDetails(args.pokemonId)

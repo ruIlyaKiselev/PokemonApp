@@ -17,6 +17,23 @@ import com.example.pokemonapp.domain.Pokemon
 import com.example.pokemonapp.domain.PokemonPreview
 import com.example.pokemonapp.ui.pokemon_list.PokemonListFragmentDirections
 
+/*
+*       This is adapter for recyclerView
+*       It use pokemonPreview model instead of pokemon model because we can load list of pokemonDetails
+*       very fast with 1 api call and we can load only one pokemon with one api call.
+*
+*       Pokemon api call is very heavy compare to list of pokemonPreview.
+*       I chose this way for speed of loading. Way with loading every pokemon model for api (30 big
+*       api call for one recyclerView page) will kill user experience because recycler view show
+*       item very slowly;
+*
+*       First time items puts to recyclerView without details (only name, id and image URL), items
+*       like that have red cross in recycler view, red cross mean that details not yet downloaded.
+*
+*       When details downloads, red cross is replaced by a green check mark, it mean that item
+*       details is loaded and this item can be compared with another items with green check mark.
+*       Green check mark - items in "index" (like git)
+* */
 class PokemonPagingDataAdapter(context: Context):
     PagingDataAdapter<PokemonPreview, PokemonViewHolder>(PokemonDiffItemCallbacks) {
 
@@ -41,6 +58,10 @@ class PokemonViewHolder(
             rcItemImage.load(pokemonPreview.imageUrl)
             rcItemId.text = "id: ${pokemonPreview.id}"
 
+            /*
+            *   If item has true in loadedFullInfo, it'll has green check mark in recyclerView
+            *   otherwise it'll has red cross in recyclerView
+            * */
             if (pokemonPreview.loadedFullInfo) {
                 rcItemLoadStatus.setImageResource(R.drawable.ic_done)
                 rcItemLoadStatus.setColorFilter(Color.GREEN)
@@ -49,6 +70,9 @@ class PokemonViewHolder(
                 rcItemLoadStatus.setColorFilter(Color.RED)
             }
 
+            /*
+            *   When item is sorted by selected specs, best item (one or few) will has yellow stroke
+            * */
             if (pokemonPreview.isBest) {
                 rcItemCardView.strokeColor = Color.YELLOW
                 rcItemCardView.strokeWidth = 2
@@ -57,6 +81,9 @@ class PokemonViewHolder(
                 rcItemCardView.strokeWidth = 0
             }
 
+            /*
+            *   Every item has onClick reaction, that use navigation to details fragment by id
+            * */
             root.setOnClickListener {
                 val action = PokemonListFragmentDirections.actionToDetails(pokemonPreview.id ?: 0)
                 itemView.findNavController().navigate(action)
@@ -65,8 +92,9 @@ class PokemonViewHolder(
     }
 }
 
-
-
+/*
+*   recyclerView callbacks for good animation behavior and other recyclerView features
+* */
 private object PokemonDiffItemCallbacks: DiffUtil.ItemCallback<PokemonPreview>() {
     override fun areItemsTheSame(oldItem: PokemonPreview, newItem: PokemonPreview): Boolean {
         return oldItem == newItem

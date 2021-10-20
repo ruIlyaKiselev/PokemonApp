@@ -11,6 +11,11 @@ data class Pokemon (
     var stats: Stats? = null
 }
 
+
+/*
+*   This extension is very useful for comparator by specs (from task)
+*   When we need to find best pokemon or sort pokemons list we use this extension method
+* */
 fun Pokemon.getStatsSum(
     byAttack: Boolean,
     byDefence: Boolean,

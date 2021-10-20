@@ -13,6 +13,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
+
+    /*
+    * This repository we use in viewModels; Repository communicates with retrofit service and with rood database
+    * viewModels shouldn't communicate with with retrofit service and with rood database
+    * */
     @Singleton
     @Provides
     fun providePokemonRepository(
